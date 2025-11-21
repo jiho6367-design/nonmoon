@@ -1,14 +1,16 @@
-// src/App.js
+// src/App.js 원래 파일 경로
+// src/components/QuotePage.jsx
+
 import React, { useState } from "react";
 import {
   toggleBookmark as apiToggleBookmark,
   deleteCard as apiDeleteCard,
-} from "./services/api";
-import QuoteInputForm from "./components/QuoteInputForm";
-import SearchBar from "./components/SearchBar";
-import QuoteCardList from "./components/QuoteCardList";
+} from "../services/api"; // ← ../services/api (수정!)
+import QuoteInputForm from "./QuoteInputForm"; // ← ./QuoteInputForm (수정!)
+import SearchBar from "./SearchBar"; // ← ./SearchBar (수정!)
+import QuoteCardList from "./QuoteCardList"; // ← ./QuoteCardList (수정!)
 
-function App() {
+function QuotePage() {
   const [cards, setCards] = useState([]);
   const [bookmarkPending, setBookmarkPending] = useState(new Set());
 
@@ -59,35 +61,33 @@ function App() {
   };
 
   const pageStyle = {
-    minHeight: "100vh",
+    minHeight: "100%",
     background: "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)",
-    padding: "3rem 1.5rem",
+    padding: "2rem 1rem",
     fontFamily: "'Noto Sans KR', 'Pretendard', sans-serif",
   };
 
   const panelStyle = {
-    maxWidth: 900,
-    margin: "0 auto",
-    padding: "2rem",
-    borderRadius: "24px",
+    padding: "1.5rem",
+    borderRadius: "16px",
     background: "rgba(255, 255, 255, 0.95)",
-    boxShadow: "0 25px 45px rgba(0, 0, 0, 0.25)",
+    boxShadow: "0 15px 25px rgba(0, 0, 0, 0.2)",
     border: "1px solid rgba(255, 255, 255, 0.4)",
     backdropFilter: "blur(8px)",
   };
 
   const titleStyle = {
     margin: 0,
-    fontSize: "2rem",
+    fontSize: "1.3rem",
     fontWeight: 700,
     color: "#1f2a37",
   };
 
   const subtitleStyle = {
     color: "#4a5568",
-    fontSize: "0.95rem",
+    fontSize: "0.8rem",
     marginTop: "0.5rem",
-    marginBottom: "1.5rem",
+    marginBottom: "1rem",
   };
 
   return (
@@ -97,19 +97,20 @@ function App() {
         <p style={subtitleStyle}>
           2: 인용 카드 정리 · 3: 인용구 내보내기 · 4/5/6: 북마크 관리 및 검색
         </p>
-        <div style={{ marginBottom: "1.25rem" }}>
+        <div style={{ marginBottom: "1rem" }}>
           <button
             onClick={() =>
               window.open("http://localhost:4000/api/cards/view", "_blank")
             }
             style={{
-              padding: "0.5rem 1rem",
-              borderRadius: "10px",
+              padding: "0.5rem 0.75rem",
+              borderRadius: "8px",
               border: "1px solid #cbd5f5",
               background: "#eef2ff",
               color: "#3730a3",
               fontWeight: 600,
               cursor: "pointer",
+              fontSize: "0.85rem",
             }}
           >
             서버 카드 리스트 열기
@@ -129,4 +130,4 @@ function App() {
   );
 }
 
-export default App;
+export default QuotePage;

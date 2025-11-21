@@ -1,0 +1,121 @@
+/* src/papers/PaperEditModal.css */
+/* 작성자: 예슬 */
+
+/* 모달 배경 */
+.edit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* 모달 창 */
+.edit-modal {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+}
+
+.edit-modal-title {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2a37;
+}
+
+/* 입력 필드 */
+.edit-modal-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+  box-sizing: border-box;
+}
+
+.edit-modal-input:focus {
+  outline: none;
+  border-color: #8a5bff;
+}
+
+/* 파일 정보 (읽기 전용) */
+.edit-modal-file-info {
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+
+.edit-modal-file-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.edit-modal-file-name {
+  font-weight: 600;
+  color: #1f2a37;
+  margin-bottom: 0.25rem;
+}
+
+.edit-modal-file-hint {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+/* 버튼 영역 */
+.edit-modal-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.edit-modal-cancel {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #6b7280;
+  font-weight: 600;
+  cursor: pointer;
+ 
+}
+
+.edit-modal-cancel:hover {
+  background: #f9fafb;
+}
+
+.edit-modal-submit {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #8a5bff, #ff7ac3);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(138, 91, 255, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.edit-modal-submit:hover {
+  transform: translateY(-2px);
+}
+
+.edit-modal-submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
