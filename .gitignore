@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # 추가된내용-----------------
@@ -26,3 +27,27 @@ sessionOption.js
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+=======
+﻿# Environment
+.env
+.env.local
+server/.env
+client-react/.env
+로그인, 회원가입 구현/.env
+
+# Node modules
+node_modules/
+server/node_modules/
+client-react/node_modules/
+로그인, 회원가입 구현/node_modules/
+
+# Data
+server/src/data/cards.data.json
+
+# Build outputs
+client-react/build/
+로그인, 회원가입 구현/build/
+
+# Logs
+npm-debug.log*
+>>>>>>> 08bba4df9a15b9a8dc0a1ebd8adf37056dc08327
