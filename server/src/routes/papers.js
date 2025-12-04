@@ -151,6 +151,9 @@ router.delete("/papers/:id", (req, res) => {
     const filePath = path.resolve(uploadRoot, removed.storedFileName);
     fs.unlink(filePath, (err) => {
       if (err) {
+        if (err.code === "ENOENT") {
+          return;
+        }
         logWarn("Failed to delete uploaded paper file", { filePath, error: err.message });
       }
     });

@@ -12,8 +12,12 @@ const DATA_ROOT = process.env.PAPERS_DATA_DIR
   : __dirname;
 const DATA_FILE = path.join(DATA_ROOT, "papers.data.json");
 
-const papers = loadPapers();
 let persistTimer = null;
+let needsInitialPersist = false;
+const papers = loadPapers();
+if (needsInitialPersist) {
+  persist();
+}
 
 function loadPapers() {
   if (!existsSync(DATA_FILE)) {
@@ -25,7 +29,13 @@ function loadPapers() {
     if (!Array.isArray(parsed)) {
       return [];
     }
-    return parsed.map((paper) => hydratePaper(paper));
+    return parsed.map((paper) => {
+      const hydrated = hydratePaper(paper);
+      if (hydrated.fileName !== (paper?.fileName || "")) {
+        needsInitialPersist = true;
+      }
+      return hydrated;
+    });
   } catch (err) {
     logError("Failed to load papers data", err);
     return [];
@@ -33,19 +43,32 @@ function loadPapers() {
 }
 
 function hydratePaper(raw = {}) {
+  const fileName = normalizeFileName(raw.fileName);
   const now = new Date().toISOString();
   return {
     id: raw.id || randomUUID(),
     title: raw.title || "",
     author: raw.author || "",
     memoCount: Number.isFinite(raw.memoCount) ? raw.memoCount : 0,
-    fileName: raw.fileName || "",
+    fileName,
     storedFileName: raw.storedFileName || "",
     fileSize: raw.fileSize || null,
     uploader: raw.uploader || "",
     uploadedAt: raw.uploadedAt || now,
     updatedAt: raw.updatedAt || now,
   };
+}
+
+// Older uploads could store mojibake (latin1-decoded) filenames; normalize back to UTF-8.
+function normalizeFileName(name) {
+  if (!name) return "";
+  const hasNonLatin1 = [...name].some((ch) => ch.charCodeAt(0) > 255);
+  if (hasNonLatin1) return name;
+  try {
+    return Buffer.from(name, "latin1").toString("utf8");
+  } catch (_err) {
+    return name;
+  }
 }
 
 function persist() {
