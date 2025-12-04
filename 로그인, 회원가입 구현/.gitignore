@@ -1,6 +1,0 @@
-﻿server/src/data/cards.data.json
-server/.env
-**/.env
-node_modules/
-**/node_modules/
-로그인, 회원가입 구현/.env
