@@ -14,6 +14,20 @@ import { logError, logWarn } from "../utils/logger.js";
 
 const router = Router();
 
+// 브라우저 업로드 시 한글 파일명이 latin1로 넘어와 깨지는 경우가 있어 UTF-8로 복원
+function decodeUploadName(file) {
+  const name = file?.originalname;
+  if (!name) return "";
+  // 이미 정상 UTF-8 문자열이면 그대로 사용
+  const hasNonLatin1 = [...name].some((ch) => ch.charCodeAt(0) > 255);
+  if (hasNonLatin1) return name;
+  try {
+    return Buffer.from(name, "latin1").toString("utf8");
+  } catch (_err) {
+    return name;
+  }
+}
+
 const uploadRoot = process.env.UPLOAD_ROOT
   ? path.resolve(process.cwd(), process.env.UPLOAD_ROOT)
   : path.resolve(process.cwd(), "uploads");
@@ -23,8 +37,11 @@ fs.mkdirSync(papersDir, { recursive: true });
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, papersDir),
   filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname) || ".pdf";
-    const base = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9-_]+/g, "-") || "paper";
+    const originalName = decodeUploadName(file);
+    // multer가 req.file.originalname에 깨진 문자열을 넣는 경우를 막기 위해 덮어쓴다.
+    file.originalname = originalName;
+    const ext = path.extname(originalName) || ".pdf";
+    const base = path.basename(originalName, ext).replace(/[^a-zA-Z0-9-_]+/g, "-") || "paper";
     const uniqueName = `${Date.now()}-${base}${ext}`;
     cb(null, uniqueName);
   },
@@ -36,7 +53,8 @@ const upload = multer({
     fileSize: Number(process.env.MAX_PAPER_SIZE || 25 * 1024 * 1024), // default 25MB
   },
   fileFilter: (_req, file, cb) => {
-    const isPdf = file.mimetype === "application/pdf" || file.originalname.toLowerCase().endsWith(".pdf");
+    const originalName = decodeUploadName(file);
+    const isPdf = file.mimetype === "application/pdf" || originalName.toLowerCase().endsWith(".pdf");
     if (!isPdf) {
       return cb(new ValidationError("Only PDF uploads are allowed", 400));
     }
@@ -92,10 +110,11 @@ router.post("/papers", upload.single("file"), (req, res, next) => {
     }
 
     const storedRelativePath = path.relative(uploadRoot, req.file.path).replace(/\\/g, "/");
+    const originalName = decodeUploadName(req.file);
 
     const paper = addPaper({
       ...payload,
-      fileName: req.file.originalname,
+      fileName: originalName,
       storedFileName: storedRelativePath,
       fileSize: req.file.size,
     });
