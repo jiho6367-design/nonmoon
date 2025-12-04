@@ -1,21 +1,48 @@
 // src/papers/PaperListPage.jsx
-// 작성자: 예슬 (논문 리스트 메인 페이지)
+// 예슬 연습 (논문 리스트 메인 페이지)
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PaperCard from "./PaperCard";
 import PaperUploadModal from "./PaperUploadModal";
-import PaperEditModal from "./PaperEditModal"; 
+import PaperEditModal from "./PaperEditModal";
 import PaperDetailPage from "./PaperDetailPage";
+import { deletePaper, fetchPapers } from "../services/api";
 import "./PaperListPage.css";
 
 function PaperListPage() {
-
-
   const [papers, setPapers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
-  const [editingPaper, setEditingPaper] = useState(null); 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingPaper, setEditingPaper] = useState(null);
   const [selectedPaper, setSelectedPaper] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const data = await fetchPapers();
+        if (!cancelled) {
+          setPapers(data);
+        }
+      } catch (err) {
+        console.error(err);
+        if (!cancelled) {
+          setError("논문 목록을 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const openUploadModal = () => {
     setIsUploadModalOpen(true);
@@ -26,13 +53,11 @@ function PaperListPage() {
   };
 
   const handlePaperUploaded = (newPaper) => {
-    console.log("새 논문 추가:", newPaper);
     setPapers((prev) => [newPaper, ...prev]);
     closeUploadModal();
   };
 
   const handlePaperClick = (paper) => {
-    console.log("논문 클릭:", paper);
     setSelectedPaper(paper);
   };
 
@@ -40,18 +65,20 @@ function PaperListPage() {
     setSelectedPaper(null);
   };
 
-  // 논문 삭제 핸들러
-  const handlePaperDelete = (paperId) => {
-    const confirmed = window.confirm("이 논문을 삭제하시겠습니까?");
+  const handlePaperDelete = async (paperId) => {
+    const confirmed = window.confirm("정말로 해당 논문을 삭제하시겠습니까?");
     if (!confirmed) return;
 
-    console.log("논문 삭제:", paperId);
-    setPapers((prev) => prev.filter((paper) => paper.id !== paperId));
+    try {
+      await deletePaper(paperId);
+      setPapers((prev) => prev.filter((paper) => paper.id !== paperId));
+    } catch (err) {
+      console.error(err);
+      alert("논문을 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.");
+    }
   };
 
-  // 논문 수정 핸들러 
   const handlePaperEdit = (paper) => {
-    console.log("논문 수정:", paper);
     setEditingPaper(paper);
     setIsEditModalOpen(true);
   };
@@ -62,39 +89,36 @@ function PaperListPage() {
   };
 
   const handlePaperEdited = (updatedPaper) => {
-    console.log("논문 수정 완료:", updatedPaper);
     setPapers((prev) =>
-      prev.map((paper) =>
-        paper.id === updatedPaper.id ? updatedPaper : paper
-      )
+      prev.map((paper) => (paper.id === updatedPaper.id ? updatedPaper : paper))
     );
     closeEditModal();
   };
 
-  // 상세 페이지로 이동
   if (selectedPaper) {
-    return (
-      <PaperDetailPage paper={selectedPaper} onBack={handleBackToList} />
-    );
+    return <PaperDetailPage paper={selectedPaper} onBack={handleBackToList} />;
   }
 
- 
   return (
     <div className="paper-list-page">
       <div className="paper-list-container">
-        {/* 헤더 */}
         <div className="paper-list-header">
-          <h1 className="paper-list-title">📚 논문 관리</h1>
+          <h1 className="paper-list-title">내 논문 관리</h1>
           <button onClick={openUploadModal} className="paper-upload-button">
             + 논문 업로드
           </button>
         </div>
 
-        {/* 논문 리스트 */}
+        {error && <div className="paper-list-error">{error}</div>}
+
         <div className="paper-list">
-          {papers.length === 0 ? (
+          {loading ? (
             <div className="paper-list-empty">
-              <p>📭 아직 업로드된 논문이 없습니다.</p>
+              <p>논문 목록을 불러오는 중...</p>
+            </div>
+          ) : papers.length === 0 ? (
+            <div className="paper-list-empty">
+              <p>아직 직접 업로드된 논문이 없습니다.</p>
               <p>위의 "논문 업로드" 버튼을 눌러 논문을 추가해보세요</p>
             </div>
           ) : (
@@ -104,22 +128,17 @@ function PaperListPage() {
                 paper={paper}
                 onClick={() => handlePaperClick(paper)}
                 onDelete={handlePaperDelete}
-                onEdit={handlePaperEdit} 
+                onEdit={handlePaperEdit}
               />
             ))
           )}
         </div>
       </div>
 
-      {/* 업로드 모달 */}
       {isUploadModalOpen && (
-        <PaperUploadModal
-          onClose={closeUploadModal}
-          onUploadSuccess={handlePaperUploaded}
-        />
+        <PaperUploadModal onClose={closeUploadModal} onUploadSuccess={handlePaperUploaded} />
       )}
 
-      {/* 수정 모달 */}
       {isEditModalOpen && editingPaper && (
         <PaperEditModal
           paper={editingPaper}

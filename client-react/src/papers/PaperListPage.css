@@ -1,5 +1,5 @@
 /* src/papers/PaperListPage.css */
-/* 작성자: 예슬 */
+/* 예슬 연습 */
 
 /* 전체 페이지 배경 */
 .paper-list-page {
@@ -37,7 +37,17 @@
   color: #1f2a37;
 }
 
-/* 업로드 버튼 */
+.paper-list-error {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  font-size: 0.95rem;
+}
+
+/* 업로드버튼 */
 .paper-upload-button {
   border: none;
   border-radius: 12px;
@@ -62,7 +72,7 @@
   gap: 1rem;
 }
 
-/* 빈 상태 */
+/* 빈상태 */
 .paper-list-empty {
   text-align: center;
   padding: 3rem 1rem;

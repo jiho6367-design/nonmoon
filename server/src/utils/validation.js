@@ -131,3 +131,39 @@ export function validateSearchPayload(body = {}) {
     onlyBookmarked: Boolean(onlyBookmarked),
   };
 }
+
+export function validatePaperCreate(body = {}) {
+  return {
+    title: ensureString(body.title, "title", { maxLength: 300 }),
+    author: ensureString(body.author ?? "", "author", {
+      required: false,
+      maxLength: 200,
+    }),
+  };
+}
+
+export function validatePaperPatch(body = {}) {
+  if (typeof body !== "object" || Array.isArray(body)) {
+    throw new ValidationError("payload must be an object");
+  }
+  const patch = {};
+
+  if ("title" in body) {
+    patch.title = ensureString(body.title ?? "", "title", {
+      required: false,
+      maxLength: 300,
+    });
+  }
+  if ("author" in body) {
+    patch.author = ensureString(body.author ?? "", "author", {
+      required: false,
+      maxLength: 200,
+    });
+  }
+
+  if (!Object.keys(patch).length) {
+    throw new ValidationError("at least one field must be provided");
+  }
+
+  return patch;
+}

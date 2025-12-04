@@ -92,3 +92,57 @@ export async function deleteCard(id) {
     throw new Error(msg || "Failed to delete card");
   }
 }
+
+// Papers
+export async function fetchPapers() {
+  const res = await fetch(`${API_BASE}/papers`);
+  if (!res.ok) {
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg || "Failed to load papers");
+  }
+  return res.json();
+}
+
+export async function uploadPaper({ title, author, file }) {
+  const formData = new FormData();
+  formData.append("title", title);
+  if (author) {
+    formData.append("author", author);
+  }
+  formData.append("file", file);
+
+  const res = await fetch(`${API_BASE}/papers`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg || "Failed to upload paper");
+  }
+
+  return res.json();
+}
+
+export async function updatePaperMeta(id, patch) {
+  const res = await fetch(`${API_BASE}/papers/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+
+  if (!res.ok) {
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg || "Failed to update paper");
+  }
+
+  return res.json();
+}
+
+export async function deletePaper(id) {
+  const res = await fetch(`${API_BASE}/papers/${id}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) {
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg || "Failed to delete paper");
+  }
+}
