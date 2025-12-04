@@ -1,0 +1,158 @@
+/* src/papers/PaperUploadModal.css */
+/* 작성자: 예슬 */
+
+/* 모달 배경 (어둡게) */
+.upload-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* 모달 창 */
+.upload-modal {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+}
+
+.upload-modal-title {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2a37;
+}
+
+/* 입력 필드 */
+.upload-modal-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+  box-sizing: border-box;
+}
+
+.upload-modal-input:focus {
+  outline: none;
+  border-color: #8a5bff;
+}
+
+/* 모달 창 */
+.upload-modal {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 20px;
+  max-width: 550px; 
+  width: 90%;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+}
+
+
+
+/* 파일 선택 영역 */
+.upload-modal-file-area {
+  width: calc(100% - 4px); 
+  padding: 1.5rem 1rem;
+  border-radius: 12px;
+  border: 2px dashed #d1d5db;
+  background: #f9fafb;
+  text-align: center;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  color: #6b7280;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+  min-height: 120px;
+}
+
+.upload-modal-file-area:hover {
+  border-color: #8a5bff;
+}
+
+/* label 요소 스타일 */
+.upload-modal-file-area label {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  padding: 0.5rem 0; 
+}
+
+.upload-modal-file-icon {
+  font-size: 2rem; 
+  margin-bottom: 0.5rem; 
+  display: block;
+}
+
+.upload-modal-file-title {
+  font-weight: 600;
+  color: #1f2a37;
+  margin: 0.3rem 0; 
+  display: block;
+  font-size: 0.95rem; 
+}
+
+.upload-modal-file-hint {
+  font-size: 0.8rem; 
+  margin-top: 0.3rem; 
+  color: #9ca3af;
+  display: block;
+}
+
+
+
+/* 버튼 영역 */
+.upload-modal-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.upload-modal-cancel {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #6b7280;
+  font-weight: 600;
+  cursor: pointer;
+  
+}
+
+.upload-modal-cancel:hover {
+  background: #f9fafb;
+}
+
+.upload-modal-submit {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #8a5bff, #ff7ac3);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(138, 91, 255, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.upload-modal-submit:hover {
+  transform: translateY(-2px);
+}
+
+.upload-modal-submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
