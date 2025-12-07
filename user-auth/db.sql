@@ -1,24 +1,20 @@
-CREATE TABLE userTable (
-    id INT(12) NOT NULL AUTO_INCREMENT,
+-- 로그인 테이블 (변경 필요 없음)
+CREATE TABLE IF NOT EXISTS userTable (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id)
-) DEFAULT CHARSET = utf8;
-USE world;
-SELECT * FROM userTable;
+    password VARCHAR(255) NOT NULL
+);
 
--- 프로젝트 그룹 테이블
-CREATE TABLE IF NOT EXISTS projectGroup (
+-- 그룹 테이블
+CREATE TABLE IF NOT EXISTS groups (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL
 );
 
--- 팀원 테이블
-CREATE TABLE IF NOT EXISTS teamMember (
+-- 멤버 테이블
+CREATE TABLE IF NOT EXISTS members (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(50) NOT NULL,
-  group_id INT NULL,
-  CONSTRAINT fk_team_group
-    FOREIGN KEY (group_id) REFERENCES projectGroup(id)
-    ON DELETE SET NULL
+  groupId INT NULL,
+  FOREIGN KEY (groupId) REFERENCES groups(id) ON DELETE SET NULL
 );

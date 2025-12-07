@@ -1,21 +1,22 @@
-// server.js
-
 const express = require("express");
 const session = require("express-session");
 const FileStore = require("session-file-store")(session);
 const cors = require("cors");
-
-const db = require("./lib/db");
-const sessionOption = require("./lib/sessionOption");
+const mysql = require("mysql2/promise");
 
 const app = express();
 const PORT = 3001;
 
-// =======================
-// 기본 미들웨어 설정
-// =======================
+// DB 연결
+const db = mysql.createPool({
+  host: "localhost",
+  user: "root",
+  password: "1234",
+  database: "login",
+  port: 3306,
+});
 
-// CORS 허용 (React 3000 -> Node 3001)
+// 세션 옵션
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -23,251 +24,172 @@ app.use(
   })
 );
 
-// JSON / 폼 데이터 파싱
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 세션 설정
-app.use(session(sessionOption));
+app.use(
+  session({
+    secret: "secret1234",
+    resave: false,
+    saveUninitialized: false,
+    store: new FileStore(),
+    cookie: { maxAge: 1000 * 60 * 60 },
+  })
+);
 
-// 서버 동작 체크용
+// 서버 정상 확인
 app.get("/", (req, res) => {
-  res.json({ ok: true, message: "API 서버 동작 중!" });
+  res.json({ ok: true, message: "Auth server is running" });
 });
 
-// =================================================
-// 회원가입 API
-// POST http://localhost:3001/signin
-// =================================================
+// 회원가입
 app.post("/signin", async (req, res) => {
   try {
     const { userId, userPassword, userPassword2 } = req.body;
 
     if (!userId || !userPassword || !userPassword2) {
-      return res.status(400).json({
-        isSuccess: false,
-        message: "모든 입력을 채워 주세요.",
-      });
+      return res.status(400).json({ isSuccess: false, message: "모든 칸을 입력하세요" });
     }
 
     if (userPassword !== userPassword2) {
-      return res.status(400).json({
-        isSuccess: false,
-        message: "비밀번호가 서로 다릅니다.",
-      });
+      return res.status(400).json({ isSuccess: false, message: "비밀번호가 다릅니다" });
     }
 
-    // 아이디 중복 체크
-    const [rows] = await db.query(
-      "SELECT * FROM userTable WHERE username = ?",
-      [userId]
-    );
+    const [rows] = await db.query("SELECT * FROM userTable WHERE username=?", [userId]);
 
     if (rows.length > 0) {
-      return res.status(409).json({
-        isSuccess: false,
-        message: "이미 존재하는 아이디입니다.",
-      });
+      return res.status(409).json({ isSuccess: false, message: "이미 존재하는 아이디입니다" });
     }
 
-    // 회원정보 저장
-    await db.query(
-      "INSERT INTO userTable (username, password) VALUES (?, ?)",
-      [userId, userPassword]
-    );
+    await db.query("INSERT INTO userTable (username,password) VALUES (?,?)", [
+      userId,
+      userPassword,
+    ]);
 
-    return res.json({
-      isSuccess: true,
-      message: "회원가입 성공!",
-    });
+    res.json({ isSuccess: true, message: "회원가입 성공" });
   } catch (err) {
-    console.error("SIGNIN ERROR:", err);
-    return res.status(500).json({
-      isSuccess: false,
-      message: "서버 내부 오류가 발생했습니다.",
-    });
+    console.error(err);
+    res.status(500).json({ isSuccess: false, message: "서버 내부 오류" });
   }
 });
 
-// =================================================
-// POST http://localhost:3001/login
-// =================================================
+// 로그인
 app.post("/login", async (req, res) => {
   try {
     const { userId, userPassword } = req.body;
 
-    if (!userId || !userPassword) {
-      return res.status(400).json({
-        isLogin: false,
-        message: "아이디와 비밀번호를 입력해 주세요.",
-      });
-    }
+    const [rows] = await db.query("SELECT * FROM userTable WHERE username=?", [userId]);
 
-    const [rows] = await db.query(
-      "SELECT * FROM userTable WHERE username = ?",
-      [userId]
-    );
-
-    if (rows.length === 0) {
-      return res.status(401).json({
-        isLogin: false,
-        message: "존재하지 않는 아이디입니다.",
-      });
-    }
+    if (rows.length === 0)
+      return res.status(401).json({ isLogin: false, message: "아이디 없음" });
 
     const user = rows[0];
 
-    if (user.password !== userPassword) {
-      return res.status(401).json({
-        isLogin: false,
-        message: "비밀번호가 일치하지 않습니다.",
-      });
-    }
+    if (user.password !== userPassword)
+      return res.status(401).json({ isLogin: false, message: "비밀번호 틀림" });
 
-    // 세션 저장
     req.session.userId = user.id;
     req.session.username = user.username;
 
-    return res.json({
-      isLogin: true,
-      message: "로그인 성공!",
-    });
+    res.json({ isLogin: true, message: "로그인 성공" });
   } catch (err) {
-    console.error("LOGIN ERROR:", err);
-    return res.status(500).json({
-      isLogin: false,
-      message: "서버 내부 오류가 발생했습니다.",
-    });
+    console.error(err);
+    res.status(500).json({ isLogin: false, message: "서버 오류" });
   }
 });
 
-// =================================================
-// =================================================
+// ⭐ 서버 실행 ⭐
+app.listen(PORT, () => {
+  console.log(`Auth server running at http://localhost:${PORT}`);
+});
+// ================================
+// 팀 관리 API
+// ================================
 
-//  전체 팀원 목록 조회
+// 그룹 목록 조회
+app.get("/groups", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM groups ORDER BY id DESC");
+    res.json(rows);
+  } catch (err) {
+    console.error("GET /groups ERROR:", err);
+    res.status(500).json({ message: "그룹 조회 오류" });
+  }
+});
+
+// 그룹 생성
+app.post("/groups", async (req, res) => {
+  const { name } = req.body;
+
+  try {
+    await db.query("INSERT INTO groups (name) VALUES (?)", [name]);
+    res.json({ isSuccess: true, message: "그룹 생성 성공" });
+  } catch (err) {
+    console.error("POST /groups ERROR:", err);
+    res.status(500).json({ isSuccess: false, message: "그룹 생성 실패" });
+  }
+});
+
+// 멤버 목록 조회
 app.get("/members", async (req, res) => {
   try {
-    const [rows] = await db.query(
-      `SELECT m.id, m.name,
-              g.id AS groupId,
-              g.name AS groupName
-       FROM teamMember m
-       LEFT JOIN projectGroup g ON m.group_id = g.id
-       ORDER BY m.id DESC`
-    );
-
-    return res.json(rows);
+    const [rows] = await db.query(`
+      SELECT m.id, m.name, m.groupId, g.name AS groupName 
+      FROM members m
+      LEFT JOIN groups g ON m.groupId = g.id
+      ORDER BY m.id DESC
+    `);
+    res.json(rows);
   } catch (err) {
     console.error("GET /members ERROR:", err);
-    return res.status(500).json({ message: "팀원 조회 중 오류가 발생했습니다." });
+    res.status(500).json({ message: "멤버 조회 오류" });
   }
 });
 
-// 팀원 추가
+// 멤버 추가
 app.post("/members", async (req, res) => {
+  const { name, groupId } = req.body;
+
   try {
-    const { name, groupId } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ message: "이름은 필수입니다." });
-    }
-
-    const [result] = await db.query(
-      "INSERT INTO teamMember (name, group_id) VALUES (?, ?)",
+    await db.query(
+      "INSERT INTO members (name, groupId) VALUES (?, ?)",
       [name, groupId || null]
     );
 
-    return res.json({
-      isSuccess: true,
-      id: result.insertId,
-      message: "팀원이 추가되었습니다.",
-    });
+    res.json({ isSuccess: true, message: "멤버 추가 성공" });
   } catch (err) {
     console.error("POST /members ERROR:", err);
-    return res.status(500).json({ message: "팀원 추가 중 오류가 발생했습니다." });
+    res.status(500).json({ isSuccess: false, message: "멤버 추가 실패" });
   }
 });
 
-// 팀원 삭제
+// 멤버 삭제
 app.delete("/members/:id", async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const { id } = req.params;
-
-    await db.query("DELETE FROM teamMember WHERE id = ?", [id]);
-
-    return res.json({
-      isSuccess: true,
-      message: "팀원이 삭제되었습니다.",
-    });
+    await db.query("DELETE FROM members WHERE id=?", [id]);
+    res.json({ isSuccess: true, message: "멤버 삭제 성공" });
   } catch (err) {
-    console.error("DELETE /members/:id ERROR:", err);
-    return res.status(500).json({ message: "팀원 삭제 중 오류가 발생했습니다." });
+    console.error("DELETE /members ERROR:", err);
+    res.status(500).json({ isSuccess: false, message: "멤버 삭제 실패" });
   }
 });
 
-// 프로젝트 그룹 목록 조회
-app.get("/groups", async (req, res) => {
-  try {
-    const [rows] = await db.query(
-      "SELECT id, name FROM projectGroup ORDER BY id DESC"
-    );
-
-    return res.json(rows);
-  } catch (err) {
-    console.error("GET /groups ERROR:", err);
-    return res.status(500).json({ message: "그룹 조회 중 오류가 발생했습니다." });
-  }
-});
-
-// 프로젝트 그룹 생성
-app.post("/groups", async (req, res) => {
-  try {
-    const { name } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ message: "그룹 이름은 필수입니다." });
-    }
-
-    const [result] = await db.query(
-      "INSERT INTO projectGroup (name) VALUES (?)",
-      [name]
-    );
-
-    return res.json({
-      isSuccess: true,
-      id: result.insertId,
-      message: "그룹이 생성되었습니다.",
-    });
-  } catch (err) {
-    console.error("POST /groups ERROR:", err);
-    return res.status(500).json({ message: "그룹 생성 중 오류가 발생했습니다." });
-  }
-});
-
-// 특정 팀원의 그룹 변경
+// 멤버 → 그룹 변경
 app.put("/members/:id/group", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { groupId } = req.body;
+  const { id } = req.params;
+  const { groupId } = req.body;
 
+  try {
     await db.query(
-      "UPDATE teamMember SET group_id = ? WHERE id = ?",
+      "UPDATE members SET groupId=? WHERE id=?",
       [groupId || null, id]
     );
 
-    return res.json({
-      isSuccess: true,
-      message: "그룹이 변경되었습니다.",
-    });
+    res.json({ isSuccess: true, message: "그룹 변경 성공" });
   } catch (err) {
-    console.error("PUT /members/:id/group ERROR:", err);
-    return res.status(500).json({ message: "그룹 변경 중 오류가 발생했습니다." });
+    console.error("PUT /members/group ERROR:", err);
+    res.status(500).json({ isSuccess: false, message: "그룹 변경 실패" });
   }
-});
-
-// =================================================
-// 서버 실행
-// =================================================
-app.listen(PORT, () => {
-  console.log(`Example app listening at http://localhost:${PORT}`);
 });
