@@ -1,6 +1,7 @@
 // src/App.js
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import PaperListPage from "./papers/PaperListPage"; //논문 리스트 페이지 컴포넌트(예슬)
 
 const API_BASE = "http://localhost:3001";
 
@@ -232,7 +233,7 @@ function Signup({ onModeChange }) {
 }
 
 // ------------------ 팀/그룹 관리 컴포넌트 ------------------
-function TeamManager({ onLogout }) {
+function TeamManager({ onLogout, onTeamComplete }) {
   const [groups, setGroups] = useState([]);
   const [members, setMembers] = useState([]);
   const [newGroupName, setNewGroupName] = useState("");
@@ -432,9 +433,19 @@ function TeamManager({ onLogout }) {
               논문 카드 프로젝트에서 사용할 팀과 프로젝트 그룹을 관리합니다.
             </p>
           </div>
-          <button className="button ghost" type="button" onClick={handleLogout}>
+//ㅇㄹㅇ
+          <button className="button ghost" type="button" onClick={handleLogout}> 
             로그아웃
           </button>
+
+          <button 
+          className="button primary"
+          style={primaryButtonStyle(false)}
+          onClick={onTeamComplete}
+        >
+          다음으로 (논문 관리)
+          </button>
+//ㄴㅇㄹㄴ
         </header>
 
         {feedback.message && (

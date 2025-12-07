@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import { palette, typography } from "./theme";
+import PaperListPage from "./papers/PaperListPage"; //논문 리스트 페이지 컴포넌트(예슬)
+
 
 const API_BASE = "http://localhost:3001";
 
@@ -252,7 +254,7 @@ function Signup({ onModeChange }) {
 }
 
 // Team / Group Manager
-function TeamManager({ onLogout }) {
+function TeamManager({ onLogout, onTeamComplete }) { 
   const [members, setMembers] = useState([]);
   const [groups, setGroups] = useState([]);
 
@@ -403,6 +405,18 @@ function TeamManager({ onLogout }) {
           >
             로그아웃
           </button>
+
+
+          
+          <button 
+            className="button primary"
+            style={primaryButtonStyle(false)}
+            onClick={onTeamComplete}
+          >
+            다음으로 (논문 관리)
+          </button>
+          
+
         </div>
 
         <div className="stack">
@@ -533,16 +547,25 @@ function TeamManager({ onLogout }) {
 
 // App
 function App() {
-  const [mode, setMode] = useState("LOGIN"); // LOGIN / SIGNUP / TEAM
 
+  const [mode, setMode] = useState("LOGIN");
+
+  
   const handleLoginSuccess = () => {
     setMode("TEAM");
   };
 
+ // 페이지 이동
+  const handleTeamComplete = () => {
+    setMode("PAPERS");
+  };
+
+  
   const handleLogout = () => {
     setMode("LOGIN");
   };
 
+  
   if (mode === "LOGIN") {
     return <Login onModeChange={setMode} onLoginSuccess={handleLoginSuccess} />;
   }
@@ -551,7 +574,19 @@ function App() {
     return <Signup onModeChange={setMode} />;
   }
 
-  return <TeamManager onLogout={handleLogout} />;
+  if (mode === "TEAM") {
+    return <TeamManager 
+      onLogout={handleLogout} 
+      onTeamComplete={handleTeamComplete}  // prop 전달
+    />;
+  }
+
+   // PaperListPage 렌더링 모드 추가 
+  if (mode === "PAPERS") {
+    return <PaperListPage onLogout={handleLogout} />;
+  }
+
+  return null;
 }
 
 export default App;

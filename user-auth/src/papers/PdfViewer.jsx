@@ -7,8 +7,11 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import "./PdfViewer.css"; 
 
-// PDF.js 워커 설정
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// PDF.js 워커 및 CJK용 cMap/폰트 경로 설정 (한글 복사 시 깨짐 방지)
+const PDFJS_VERSION = pdfjs.version;
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${PDFJS_VERSION}/build/pdf.worker.min.mjs`;
+const PDF_CMAP_URL = `//unpkg.com/pdfjs-dist@${PDFJS_VERSION}/cmaps/`;
+const PDF_STANDARD_FONT_URL = `//unpkg.com/pdfjs-dist@${PDFJS_VERSION}/standard_fonts/`;
 
 function PdfViewer({ file }) {
 
@@ -64,6 +67,12 @@ function PdfViewer({ file }) {
           file={file}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
+          options={{
+            // cMap/standard fonts 제공: CJK 문자 추출(복사) 시 올바른 문자 매핑
+            cMapUrl: PDF_CMAP_URL,
+            cMapPacked: true,
+            standardFontDataUrl: PDF_STANDARD_FONT_URL,
+          }}
           loading={
             <div className="pdf-loading">
               <p>📄 PDF를 불러오는 중...</p>
