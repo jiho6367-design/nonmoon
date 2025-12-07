@@ -57,7 +57,7 @@ function PaperCard({ paper, onClick, onDelete, onEdit }) {
       <div className="paper-card-uploader">
         <span className="paper-card-uploader-text">
           <span>🔼</span>
-          <span>업로드: {paper.uploader || "미정"}</span>
+          <span>업로드: {paper.uploader || "예슬"}</span>
         </span>
       </div>
     </div>
