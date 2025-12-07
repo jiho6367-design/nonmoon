@@ -113,7 +113,7 @@ function QuotePage() {
               fontSize: "0.85rem",
             }}
           >
-            서버 카드 리스트 열기
+            인용 카드 리스트 열기
           </button>
         </div>
 
