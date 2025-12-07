@@ -92,3 +92,51 @@ export async function deleteCard(id) {
     throw new Error(msg || "Failed to delete card");
   }
 }
+// ------------------------------
+// AUTH API
+// ------------------------------
+
+// 회원가입
+export async function register(username, password, passwordConfirm) {
+  const res = await fetch(`${API_BASE}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password, passwordConfirm }),
+  });
+
+  if (!res.ok) {
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg || "회원가입 중 오류가 발생했습니다.");
+  }
+
+  return res.json();
+}
+
+// 로그인
+export async function login(username, password) {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+
+  if (!res.ok) {
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg || "로그인 실패");
+  }
+
+  return res.json();
+}
+
+// 로그인한 사용자 정보 가져오기
+export async function fetchMe(token) {
+  const res = await fetch(`${API_BASE}/auth/me`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) return null;
+  return res.json();
+}
