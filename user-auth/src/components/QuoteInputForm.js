@@ -161,7 +161,7 @@ function QuoteInputForm({ onCardCreated }) {
         placeholder="(선택) 참고문헌 힌트 (예: Smith 2023 ACL)"
       />
       <button onClick={handleMake} disabled={loading} style={actionButtonStyle}>
-        {loading ? "생성 중..." : "AI로 카드 만들기"}
+        {loading ? "생성 중..." : "카드 만들기"}
       </button>
       {citationPreview?.style && (
         <div
