@@ -15,7 +15,7 @@ const router = Router();
 
 router.post("/normalize-quote", aiRateLimiter, async (req, res, next) => {
   try {
-    const { text } = validateNormalizeQuotePayload(req.body);
+    const { text, creatorName } = validateNormalizeQuotePayload(req.body);
     const normalized = await normalizeQuote(text);
 
     const deriveTopic = () => {
@@ -47,6 +47,7 @@ router.post("/normalize-quote", aiRateLimiter, async (req, res, next) => {
       venue: null,
       citationStyle: "",
       isBookmarked: false,
+      creatorName: creatorName ?? null,
     });
 
     refreshCardEmbedding(card).catch((error) =>

@@ -6,7 +6,7 @@ import PdfViewer from "./PdfViewer";
 import QuotePage from "../components/QuotePage";
 import "./PaperDetailPage.css";
 
-function PaperDetailPage({ paper, onBack }) {
+function PaperDetailPage({ paper, onBack, currentMemberName }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const fileSource = paper.fileUrl || paper.file;
 
@@ -58,7 +58,7 @@ function PaperDetailPage({ paper, onBack }) {
 
         <div className={`paper-detail-sidebar ${isSidebarOpen ? "open" : ""}`}>
           <div className="paper-detail-sidebar-content">
-            <QuotePage />
+            <QuotePage currentMemberName={currentMemberName} />
           </div>
         </div>
       </div>

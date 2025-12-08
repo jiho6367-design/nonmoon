@@ -117,6 +117,7 @@ router.post("/papers", upload.single("file"), (req, res, next) => {
       fileName: originalName,
       storedFileName: storedRelativePath,
       fileSize: req.file.size,
+      uploader: payload.uploader || "",
     });
 
     return res.status(201).json(serializePaper(req, paper));

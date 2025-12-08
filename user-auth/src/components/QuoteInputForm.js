@@ -1,57 +1,21 @@
-// src/components/QuoteInputForm.js
-import React, { useEffect, useState } from "react";
-import {
-  normalizeQuote,
-  formatCitation,
-  updateCard,
-} from "../services/api";
+﻿// src/components/QuoteInputForm.js
+import React, { useState } from "react";
+import { normalizeQuote, updateCard } from "../services/api";
 
-function QuoteInputForm({ onCardCreated }) {
+function QuoteInputForm({ onCardCreated, currentMemberName }) {
   const [text, setText] = useState("");
   const [title, setTitle] = useState("");
-  const [hint, setHint] = useState("");
+  const [authorInput, setAuthorInput] = useState("");
+  const [yearInput, setYearInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [citationPreview, setCitationPreview] = useState(null);
-  const [citationCopied, setCitationCopied] = useState(false);
-
-  useEffect(() => {
-    if (!citationCopied) return;
-    const timer = setTimeout(() => setCitationCopied(false), 1500);
-    return () => clearTimeout(timer);
-  }, [citationCopied]);
-
-  const handleCopyPreview = async () => {
-    if (!citationPreview?.style) return;
-    try {
-      const canUseClipboard =
-        typeof navigator !== "undefined" && navigator.clipboard?.writeText;
-
-      if (canUseClipboard) {
-        await navigator.clipboard.writeText(citationPreview.style);
-      } else if (typeof document !== "undefined") {
-        const textarea = document.createElement("textarea");
-        textarea.value = citationPreview.style;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-      } else {
-        throw new Error("Clipboard API unavailable");
-      }
-      setCitationCopied(true);
-    } catch (err) {
-      console.error(err);
-      alert("인용구 복사에 실패했습니다.");
-    }
-  };
 
   const handleMake = async () => {
     if (!text.trim()) return;
     setLoading(true);
     try {
-      let card = await normalizeQuote(text);
+      let card = await normalizeQuote(text, { creatorName: currentMemberName });
       if (!card || !card.id) {
-        throw new Error("카드를 생성하지 못했어요");
+        throw new Error("카드를 생성하지 못했습니다.");
       }
 
       const patch = {};
@@ -59,18 +23,11 @@ function QuoteInputForm({ onCardCreated }) {
       if (trimmedTitle) {
         patch.topic = trimmedTitle;
       }
-
-      if (hint.trim()) {
-        const citation = await formatCitation(hint);
-        patch.author = citation.author ?? null;
-        patch.year = citation.year ?? null;
-        patch.sourceTitle = citation.title ?? null;
-        patch.venue = citation.venue ?? null;
-        patch.citationStyle = citation.style ?? "";
-        setCitationPreview(citation);
-        setCitationCopied(false);
-      } else {
-        setCitationPreview(null);
+      if (authorInput.trim()) {
+        patch.author = authorInput.trim();
+      }
+      if (yearInput.trim()) {
+        patch.year = yearInput.trim();
       }
 
       if (Object.keys(patch).length > 0) {
@@ -85,10 +42,11 @@ function QuoteInputForm({ onCardCreated }) {
       onCardCreated && onCardCreated(card);
       setText("");
       setTitle("");
-      setHint("");
+      setAuthorInput("");
+      setYearInput("");
     } catch (e) {
       console.error(e);
-      alert("카드 생성 중 오류가 발생했습니다.");
+      alert("카드 생성에 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -124,68 +82,41 @@ function QuoteInputForm({ onCardCreated }) {
     boxShadow: "0 12px 24px rgba(138, 91, 255, 0.3)",
   };
 
-  const iconButtonStyle = {
-    border: "none",
-    background: "rgba(99, 102, 241, 0.08)",
-    color: "#4c51bf",
-    borderRadius: "999px",
-    width: "36px",
-    height: "36px",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    fontSize: "1rem",
-  };
-
   return (
     <div style={containerStyle}>
-      <h3 style={{ marginTop: 0, marginBottom: "0.75rem" }}>인용 카드 만들기 (AI)</h3>
+      <h3 style={{ marginTop: 0, marginBottom: "0.75rem" }}>인용 카드 만들기</h3>
       <input
         style={controlStyle}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="카드 제목 (예: 인공지능 요약)"
+        placeholder="카드 제목 (예: 핵심 키워드)"
       />
       <textarea
         rows={5}
         style={controlStyle}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="논문에서 복사한 문단 붙여넣기"
+        placeholder="인용문을 붙여 넣어 주세요"
       />
-      <input
-        style={controlStyle}
-        value={hint}
-        onChange={(e) => setHint(e.target.value)}
-        placeholder="(선택) 참고문헌 힌트 (예: Smith 2023 ACL)"
-      />
-      <button onClick={handleMake} disabled={loading} style={actionButtonStyle}>
-        {loading ? "생성 중..." : "카드 만들기"}
-      </button>
-      {citationPreview?.style && (
-        <div
-          style={{
-            marginTop: "0.75rem",
-            padding: "0.75rem",
-            border: "1px solid #eee",
-            borderRadius: 8,
-            background: "#fdfdfd",
-          }}
-        >
-          <p style={{ fontWeight: "bold", marginBottom: "0.25rem" }}>최근 생성된 인용구</p>
-          <p style={{ fontSize: "0.9rem", lineHeight: 1.5 }}>{citationPreview.style}</p>
-          <button
-            type="button"
-            onClick={handleCopyPreview}
-            style={{ ...iconButtonStyle, marginTop: "0.4rem" }}
-            title="참고문헌 복사"
-            aria-label="참고문헌 복사"
-          >
-            {citationCopied ? "✔" : "📋"}
-          </button>
-        </div>
-      )}
+      <div style={{ display: "flex", gap: "0.75rem" }}>
+        <input
+          style={{ ...controlStyle, marginBottom: 0 }}
+          value={authorInput}
+          onChange={(e) => setAuthorInput(e.target.value)}
+          placeholder="(선택) 저자"
+        />
+        <input
+          style={{ ...controlStyle, marginBottom: 0 }}
+          value={yearInput}
+          onChange={(e) => setYearInput(e.target.value)}
+          placeholder="(선택) 연도"
+        />
+      </div>
+      <div style={{ marginTop: "0.8rem", display: "flex", justifyContent: "flex-start" }}>
+        <button onClick={handleMake} disabled={loading} style={actionButtonStyle}>
+          {loading ? "생성 중.." : "카드 만들기"}
+        </button>
+      </div>
     </div>
   );
 }

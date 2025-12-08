@@ -68,6 +68,7 @@ function normalizeBoolean(value, field) {
 export function validateNormalizeQuotePayload(body = {}) {
   return {
     text: ensureString(body.text, "text"),
+    creatorName: normalizeOptionalString(body.creatorName, { maxLength: 200 }),
   };
 }
 
@@ -92,6 +93,7 @@ export function validateCardPatch(patch = {}) {
   if ("sourceTitle" in patch) sanitized.sourceTitle = normalizeOptionalString(patch.sourceTitle, { maxLength: 500 });
   if ("venue" in patch) sanitized.venue = normalizeOptionalString(patch.venue, { maxLength: 500 });
   if ("citationStyle" in patch) sanitized.citationStyle = ensureString(patch.citationStyle ?? "", "citationStyle", { required: false, maxLength: 500 });
+  if ("creatorName" in patch) sanitized.creatorName = normalizeOptionalString(patch.creatorName, { maxLength: 200 });
   if ("isBookmarked" in patch) sanitized.isBookmarked = normalizeBoolean(patch.isBookmarked, "isBookmarked");
 
   if (!Object.keys(sanitized).length) {
@@ -136,6 +138,10 @@ export function validatePaperCreate(body = {}) {
   return {
     title: ensureString(body.title, "title", { maxLength: 300 }),
     author: ensureString(body.author ?? "", "author", {
+      required: false,
+      maxLength: 200,
+    }),
+    uploader: ensureString(body.uploader ?? "", "uploader", {
       required: false,
       maxLength: 200,
     }),

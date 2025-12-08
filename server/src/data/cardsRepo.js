@@ -22,6 +22,7 @@ const BASE_CARD = {
   venue: null,
   citationStyle: "",
   isBookmarked: false,
+  creatorName: null,
   embedding: [],
   embeddingUpdatedAt: null,
   embeddingFailedAt: null,
@@ -63,12 +64,7 @@ function persist(cards) {
     clearTimeout(persistTimer);
   }
   persistTimer = setTimeout(() => {
-    try {
-      mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-      writeFileSync(DATA_FILE, JSON.stringify(cards, null, 2), "utf-8");
-    } catch (err) {
-      logError("Failed to save cards data", err);
-    }
+    saveNow(cards);
   }, 50);
 }
 
@@ -82,6 +78,20 @@ function saveNow(cards) {
 }
 
 const cards = loadCards();
+
+function registerExitPersistence() {
+  let flushed = false;
+  const flush = () => {
+    if (flushed) return;
+    flushed = true;
+    saveNow(cards);
+  };
+  ["SIGINT", "SIGTERM", "beforeExit", "exit"].forEach((event) => {
+    process.on(event, flush);
+  });
+}
+
+registerExitPersistence();
 
 export function addCard(card) {
   const hydrated = hydrateCard(card);

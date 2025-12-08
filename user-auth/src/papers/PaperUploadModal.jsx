@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import { uploadPaper } from "../services/api";
 import "./PaperUploadModal.css";
 
-function PaperUploadModal({ onClose, onUploadSuccess }) {
+function PaperUploadModal({ onClose, onUploadSuccess, uploaderName }) {
   const [paperTitle, setPaperTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
@@ -38,6 +38,7 @@ function PaperUploadModal({ onClose, onUploadSuccess }) {
         title: paperTitle.trim(),
         author: author.trim(),
         file: selectedFile,
+        uploader: uploaderName || undefined,
       });
 
       onUploadSuccess(uploaded);

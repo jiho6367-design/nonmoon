@@ -9,7 +9,7 @@ import PaperDetailPage from "./PaperDetailPage";
 import { deletePaper, fetchPapers } from "../services/api";
 import "./PaperListPage.css";
 
-function PaperListPage() {
+function PaperListPage({ currentMemberName }) {
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -96,7 +96,7 @@ function PaperListPage() {
   };
 
   if (selectedPaper) {
-    return <PaperDetailPage paper={selectedPaper} onBack={handleBackToList} />;
+    return <PaperDetailPage paper={selectedPaper} onBack={handleBackToList} currentMemberName={currentMemberName} />;
   }
 
   return (
@@ -136,7 +136,11 @@ function PaperListPage() {
       </div>
 
       {isUploadModalOpen && (
-        <PaperUploadModal onClose={closeUploadModal} onUploadSuccess={handlePaperUploaded} />
+        <PaperUploadModal
+          onClose={closeUploadModal}
+          onUploadSuccess={handlePaperUploaded}
+          uploaderName={currentMemberName}
+        />
       )}
 
       {isEditModalOpen && editingPaper && (

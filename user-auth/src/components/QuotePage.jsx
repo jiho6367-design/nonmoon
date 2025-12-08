@@ -10,7 +10,7 @@ import QuoteInputForm from "./QuoteInputForm"; // ← ./QuoteInputForm (수정!)
 import SearchBar from "./SearchBar"; // ← ./SearchBar (수정!)
 import QuoteCardList from "./QuoteCardList"; // ← ./QuoteCardList (수정!)
 
-function QuotePage() {
+function QuotePage({ currentMemberName }) {
   const [cards, setCards] = useState([]);
   const [bookmarkPending, setBookmarkPending] = useState(new Set());
 
@@ -94,9 +94,6 @@ function QuotePage() {
     <div style={pageStyle}>
       <div style={panelStyle}>
         <h2 style={titleStyle}>논문 인용 카드 정리</h2>
-        <p style={subtitleStyle}>
-          2: 인용 카드 정리 · 3: 인용구 내보내기 · 4/5/6: 북마크 관리 및 검색
-        </p>
         <div style={{ marginBottom: "1rem" }}>
           <button
             onClick={() =>
@@ -117,7 +114,7 @@ function QuotePage() {
           </button>
         </div>
 
-        <QuoteInputForm onCardCreated={handleCardCreated} />
+        <QuoteInputForm onCardCreated={handleCardCreated} currentMemberName={currentMemberName} />
         <SearchBar onSearchResult={handleSearchResult} />
         <QuoteCardList
           cards={cards}

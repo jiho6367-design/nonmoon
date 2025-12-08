@@ -2,11 +2,11 @@
 const API_BASE = "http://localhost:4000/api";
 
 // 2번: 인용 구절 정리
-export async function normalizeQuote(text) {
+export async function normalizeQuote(text, { creatorName } = {}) {
   const res = await fetch(`${API_BASE}/ai/normalize-quote`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text, creatorName }),
   });
   return res.json();
 }
@@ -103,11 +103,14 @@ export async function fetchPapers() {
   return res.json();
 }
 
-export async function uploadPaper({ title, author, file }) {
+export async function uploadPaper({ title, author, file, uploader }) {
   const formData = new FormData();
   formData.append("title", title);
   if (author) {
     formData.append("author", author);
+  }
+  if (uploader) {
+    formData.append("uploader", uploader);
   }
   formData.append("file", file);
 

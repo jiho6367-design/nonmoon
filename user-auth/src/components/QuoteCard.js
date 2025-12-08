@@ -1,12 +1,7 @@
-// src/components/QuoteCard.js
+﻿// src/components/QuoteCard.js
 import React, { useEffect, useState } from "react";
 
-function QuoteCard({
-  card,
-  onToggleBookmark,
-  onDeleteCard,
-  isBookmarkPending,
-}) {
+function QuoteCard({ card, onToggleBookmark, onDeleteCard, isBookmarkPending }) {
   const [citationCopied, setCitationCopied] = useState(false);
   const [quoteCopied, setQuoteCopied] = useState(false);
 
@@ -23,8 +18,7 @@ function QuoteCard({
   }, [quoteCopied]);
 
   const copyToClipboard = async (text) => {
-    const canUseClipboard =
-      typeof navigator !== "undefined" && navigator.clipboard?.writeText;
+    const canUseClipboard = typeof navigator !== "undefined" && navigator.clipboard?.writeText;
 
     if (canUseClipboard) {
       await navigator.clipboard.writeText(text);
@@ -51,7 +45,7 @@ function QuoteCard({
       setCitationCopied(true);
     } catch (err) {
       console.error(err);
-      alert("참고문헌 복사에 실패했습니다.");
+      alert("참고문헌을 복사하지 못했습니다.");
     }
   };
 
@@ -61,7 +55,7 @@ function QuoteCard({
       setQuoteCopied(true);
     } catch (err) {
       console.error(err);
-      alert("인용구 복사에 실패했습니다.");
+      alert("인용문을 복사하지 못했습니다.");
     }
   };
 
@@ -155,6 +149,9 @@ function QuoteCard({
           </button>
         )}
       </div>
+      <div style={{ marginTop: "0.25rem", color: "#4b5563", fontSize: "0.85rem" }}>
+        {card.creatorName ? `작성자: ${card.creatorName}` : "작성자 미지정"}
+      </div>
       <div
         style={{
           display: "flex",
@@ -164,18 +161,11 @@ function QuoteCard({
         }}
       >
         <p style={{ whiteSpace: "pre-wrap", margin: 0, flex: 1 }}>{card.quote}</p>
-        <button
-          onClick={handleCopyQuote}
-          style={iconButtonStyle}
-          title="문단 복사"
-          aria-label="문단 복사"
-        >
-          {quoteCopied ? "✔" : "📋"}
+        <button onClick={handleCopyQuote} style={iconButtonStyle} title="인용문 복사" aria-label="인용문 복사">
+          {quoteCopied ? "✅" : "📋"}
         </button>
       </div>
-      {card.note && (
-        <p style={{ whiteSpace: "pre-wrap", color: "#444" }}>{card.note}</p>
-      )}
+      {card.note && <p style={{ whiteSpace: "pre-wrap", color: "#444" }}>{card.note}</p>}
       {(card.sourceTitle || card.venue) && (
         <p style={{ fontSize: "0.8rem", color: "#666" }}>
           {card.sourceTitle}
@@ -187,26 +177,7 @@ function QuoteCard({
           {card.author} {card.year ? `(${card.year})` : ""}
         </p>
       )}
-      {card.keywords?.length > 0 && (
-        <div style={{ marginBottom: "0.5rem" }}>
-          <span style={{ fontSize: "0.8rem", color: "#555" }}>키워드</span>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem", marginTop: "0.25rem" }}>
-            {card.keywords.map((kw, idx) => (
-              <span
-                key={`${card.id}-${kw}-${idx}`}
-                style={{
-                  background: "#f0f0f0",
-                  borderRadius: 4,
-                  padding: "0.15rem 0.4rem",
-                  fontSize: "0.75rem",
-                }}
-              >
-                {kw}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* 키워드 표시 제거 */}
       {card.citationStyle && (
         <div
           style={{
@@ -216,9 +187,7 @@ function QuoteCard({
             borderRadius: 6,
           }}
         >
-          <p style={{ fontSize: "0.8rem", color: "#555", marginBottom: "0.25rem" }}>
-            참고문헌
-          </p>
+          <p style={{ fontSize: "0.8rem", color: "#555", marginBottom: "0.25rem" }}>참고문헌</p>
           <p style={{ fontSize: "0.85rem", lineHeight: 1.4 }}>{card.citationStyle}</p>
           <button
             onClick={handleCopyCitation}
@@ -226,15 +195,11 @@ function QuoteCard({
             title="참고문헌 복사"
             aria-label="참고문헌 복사"
           >
-            {citationCopied ? "✔" : "📋"}
+            {citationCopied ? "✅" : "📋"}
           </button>
         </div>
       )}
-      <button
-        onClick={() => onToggleBookmark && onToggleBookmark(card.id)}
-        disabled={isBookmarkPending}
-        style={bookmarkButtonStyle}
-      >
+      <button onClick={() => onToggleBookmark && onToggleBookmark(card.id)} disabled={isBookmarkPending} style={bookmarkButtonStyle}>
         {isBookmarkPending
           ? "변경 중..."
           : card.isBookmarked

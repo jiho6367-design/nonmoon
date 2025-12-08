@@ -1,10 +1,9 @@
-// user-auth/src/App.js
+﻿// user-auth/src/App.js
 // Auth demo styled to match the main client-react app.
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import { palette, typography } from "./theme";
 import PaperListPage from "./papers/PaperListPage"; //논문 리스트 페이지 컴포넌트(예슬)
-
 
 const API_BASE = "http://localhost:3001";
 
@@ -254,7 +253,7 @@ function Signup({ onModeChange }) {
 }
 
 // Team / Group Manager
-function TeamManager({ onLogout, onTeamComplete }) { 
+function TeamManager({ onLogout, onTeamComplete }) {
   const [members, setMembers] = useState([]);
   const [groups, setGroups] = useState([]);
 
@@ -262,6 +261,7 @@ function TeamManager({ onLogout, onTeamComplete }) {
   const [newMemberGroupId, setNewMemberGroupId] = useState("");
 
   const [newGroupName, setNewGroupName] = useState("");
+  const [selectedMemberId, setSelectedMemberId] = useState(null);
 
   useEffect(() => {
     fetchMembers();
@@ -394,29 +394,26 @@ function TeamManager({ onLogout, onTeamComplete }) {
         <div className="toolbar">
           <div className="panel-header">
             <h1 className="panel-title">팀원 / 프로젝트 그룹 관리</h1>
-            <p className="panel-subtitle">
-              메인 앱의 카드 패널 스타일을 적용해 통일된 경험을 제공합니다.
-            </p>
+            <p className="panel-subtitle">멤버를 선택하고 시작하면 논문 관리로 이동합니다.</p>
           </div>
+          <button className="button primary" style={primaryButtonStyle(false)} onClick={onLogout}>
+            로그아웃
+          </button>
           <button
             className="button primary"
             style={primaryButtonStyle(false)}
-            onClick={onLogout}
+            onClick={() => {
+              const chosen = members.find((m) => m.id === selectedMemberId);
+              if (!chosen) {
+                alert("시작할 멤버를 선택해 주세요.");
+                return;
+              }
+              alert(`환영합니다 ${chosen.name}님`);
+              onTeamComplete(chosen.name);
+            }}
           >
-            로그아웃
+            시작하기 (논문 관리)
           </button>
-
-
-          
-          <button 
-            className="button primary"
-            style={primaryButtonStyle(false)}
-            onClick={onTeamComplete}
-          >
-            다음으로 (논문 관리)
-          </button>
-          
-
         </div>
 
         <div className="stack">
@@ -435,11 +432,7 @@ function TeamManager({ onLogout, onTeamComplete }) {
                   onChange={(e) => setNewGroupName(e.target.value)}
                 />
               </div>
-              <button
-                type="submit"
-                className="button primary"
-                style={primaryButtonStyle(false)}
-              >
+              <button type="submit" className="button primary" style={primaryButtonStyle(false)}>
                 그룹 추가
               </button>
             </form>
@@ -476,11 +469,7 @@ function TeamManager({ onLogout, onTeamComplete }) {
                   ))}
                 </select>
               </div>
-              <button
-                type="submit"
-                className="button primary"
-                style={primaryButtonStyle(false)}
-              >
+              <button type="submit" className="button primary" style={primaryButtonStyle(false)}>
                 멤버 추가
               </button>
             </form>
@@ -488,7 +477,9 @@ function TeamManager({ onLogout, onTeamComplete }) {
 
           <div className="card section" style={sectionCardStyle}>
             <h2 className="section-title">멤버 목록</h2>
-            <div className="muted">멤버 정보를 보고 그룹을 변경하거나 삭제하세요.</div>
+            <div className="muted">
+              멤버 정보를 확인하고 시작할 멤버를 선택하세요. 필요하면 그룹을 변경하거나 삭제할 수 있습니다.
+            </div>
             <div className="divider" />
             {members.length === 0 ? (
               <p className="muted">등록된 멤버가 없습니다.</p>
@@ -496,6 +487,7 @@ function TeamManager({ onLogout, onTeamComplete }) {
               <table className="table">
                 <thead>
                   <tr>
+                    <th>선택</th>
                     <th>이름</th>
                     <th>그룹</th>
                     <th>그룹 변경</th>
@@ -505,6 +497,14 @@ function TeamManager({ onLogout, onTeamComplete }) {
                 <tbody>
                   {members.map((m) => (
                     <tr key={m.id}>
+                      <td>
+                        <input
+                          type="radio"
+                          name="selectedMember"
+                          checked={selectedMemberId === m.id}
+                          onChange={() => setSelectedMemberId(m.id)}
+                        />
+                      </td>
                       <td>{m.name}</td>
                       <td>{m.groupName || "-"}</td>
                       <td>
@@ -546,26 +546,26 @@ function TeamManager({ onLogout, onTeamComplete }) {
 }
 
 // App
+// App
 function App() {
-
   const [mode, setMode] = useState("LOGIN");
+  const [activeMemberName, setActiveMemberName] = useState("");
 
-  
   const handleLoginSuccess = () => {
     setMode("TEAM");
   };
 
- // 페이지 이동
-  const handleTeamComplete = () => {
+  // 페이지 이동
+  const handleTeamComplete = (memberName) => {
+    setActiveMemberName(memberName || "");
     setMode("PAPERS");
   };
 
-  
   const handleLogout = () => {
     setMode("LOGIN");
+    setActiveMemberName("");
   };
 
-  
   if (mode === "LOGIN") {
     return <Login onModeChange={setMode} onLoginSuccess={handleLoginSuccess} />;
   }
@@ -575,15 +575,12 @@ function App() {
   }
 
   if (mode === "TEAM") {
-    return <TeamManager 
-      onLogout={handleLogout} 
-      onTeamComplete={handleTeamComplete}  // prop 전달
-    />;
+    return <TeamManager onLogout={handleLogout} onTeamComplete={handleTeamComplete} />;
   }
 
-   // PaperListPage 렌더링 모드 추가 
+  // PaperListPage 렌더링 모드 추가
   if (mode === "PAPERS") {
-    return <PaperListPage onLogout={handleLogout} />;
+    return <PaperListPage onLogout={handleLogout} currentMemberName={activeMemberName} />;
   }
 
   return null;
