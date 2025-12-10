@@ -23,6 +23,13 @@ function PaperDetailPage({ paper, onBack, currentMemberName }) {
   const [summaryCreating, setSummaryCreating] = useState(false);
   const [summaryError, setSummaryError] = useState("");
   const [summaryFileOverride, setSummaryFileOverride] = useState(null);
+  const toAbsoluteUrl = (maybeRelative) => {
+    if (!maybeRelative) return null;
+    if (/^https?:\/\//i.test(maybeRelative)) return maybeRelative;
+    const base = "http://localhost:4000";
+    return `${base}${maybeRelative.startsWith("/") ? "" : "/"}${maybeRelative}`;
+  };
+
   const fileSource =
     summaryFileOverride ||
     paper.fileUrl ||
@@ -149,11 +156,17 @@ function PaperDetailPage({ paper, onBack, currentMemberName }) {
       setSummaryFileOverride(null);
       return;
     }
-    const url =
+    const hasFile = Boolean(selectedSummary.fileUrl || selectedSummary.storedFileName);
+    if (!hasFile) {
+      setSummaryFileOverride(null);
+      return;
+    }
+    const url = toAbsoluteUrl(
       selectedSummary.fileUrl ||
-      (selectedSummary.storedFileName
-        ? `http://localhost:4000/uploads/${selectedSummary.storedFileName}`
-        : null);
+        (selectedSummary.storedFileName
+          ? `/uploads/${selectedSummary.storedFileName}`
+          : "")
+    );
     setSummaryFileOverride(url);
   }, [selectedSummary]);
 
