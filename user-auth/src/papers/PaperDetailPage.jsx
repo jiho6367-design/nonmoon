@@ -30,12 +30,6 @@ function PaperDetailPage({ paper, onBack, currentMemberName }) {
     return `${base}${maybeRelative.startsWith("/") ? "" : "/"}${maybeRelative}`;
   };
 
-  const displayFileName =
-    (selectedSummary &&
-      (selectedSummary.pdfName ||
-        (selectedSummary.storedFileName ? selectedSummary.storedFileName : null))) ||
-    paper.fileName;
-
   const fileSource =
     summaryFileOverride ||
     paper.fileUrl ||
@@ -56,6 +50,12 @@ function PaperDetailPage({ paper, onBack, currentMemberName }) {
     () => summaryEntries.find((entry) => entry.id === selectedSummaryId) || null,
     [selectedSummaryId, summaryEntries]
   );
+
+  const displayFileName =
+    (selectedSummary &&
+      (selectedSummary.pdfName ||
+        (selectedSummary.storedFileName ? selectedSummary.storedFileName : null))) ||
+    paper.fileName;
 
   useEffect(() => {
     if (activePanel !== "summary") return;
