@@ -30,6 +30,12 @@ function PaperDetailPage({ paper, onBack, currentMemberName }) {
     return `${base}${maybeRelative.startsWith("/") ? "" : "/"}${maybeRelative}`;
   };
 
+  const displayFileName =
+    (selectedSummary &&
+      (selectedSummary.pdfName ||
+        (selectedSummary.storedFileName ? selectedSummary.storedFileName : null))) ||
+    paper.fileName;
+
   const fileSource =
     summaryFileOverride ||
     paper.fileUrl ||
@@ -197,7 +203,7 @@ function PaperDetailPage({ paper, onBack, currentMemberName }) {
       <div className="paper-detail-content">
         <div className="paper-detail-pdf-area">
           <div className="paper-detail-pdf-container">
-            <h3 className="paper-detail-pdf-title">📄 {paper.fileName}</h3>
+            <h3 className="paper-detail-pdf-title">📄 {displayFileName}</h3>
 
             {fileSource ? (
               <PdfViewer file={fileSource} />
