@@ -22,7 +22,10 @@ function PaperDetailPage({ paper, onBack, currentMemberName }) {
   const [summaryActionId, setSummaryActionId] = useState("");
   const [summaryCreating, setSummaryCreating] = useState(false);
   const [summaryError, setSummaryError] = useState("");
-  const fileSource = paper.fileUrl || paper.file;
+  const fileSource =
+    paper.fileUrl ||
+    paper.file ||
+    (paper.storedFileName ? `http://localhost:4000/uploads/${paper.storedFileName}` : "");
 
   const handleToggleMemo = () => {
     setActivePanel((prev) => (prev === "memo" ? null : "memo"));
@@ -160,7 +163,7 @@ function PaperDetailPage({ paper, onBack, currentMemberName }) {
       <div className="paper-detail-content">
         <div className="paper-detail-pdf-area">
           <div className="paper-detail-pdf-container">
-            <h3 className="paper-detail-pdf-title">파일 {paper.fileName}</h3>
+            <h3 className="paper-detail-pdf-title">📄 {paper.fileName}</h3>
 
             {fileSource ? (
               <PdfViewer file={fileSource} />

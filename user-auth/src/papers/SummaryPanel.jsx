@@ -51,7 +51,7 @@ function SummaryPanel({
       });
       setIsEditing(false);
     }
-  }, [selectedEntry?.id]);
+  }, [selectedEntry]);
 
   const sortedEntries = useMemo(
     () =>
@@ -170,7 +170,9 @@ function SummaryPanel({
         <div style={sectionHeaderStyle}>
           <div>
             <div style={labelStyle}>논문 | 요약</div>
-            <div style={mutedStyle}>제목·저자·연도와 PDF를 업로드해 AI 요약을 받아보세요.</div>
+            <div style={{ ...mutedStyle, whiteSpace: "pre-line" }}>
+              제목·저자·연도와 PDF를 업로드 해{"\n"}AI 요약을 받아보세요.
+            </div>
           </div>
           <button style={ghostButtonStyle} onClick={() => onChangeView && onChangeView("list")}>
             요약 리스트 보기
@@ -493,6 +495,7 @@ const ghostButtonStyle = {
   color: "#1f2937",
   cursor: "pointer",
   fontWeight: 700,
+  whiteSpace: "nowrap",
 };
 
 const uploadLabelStyle = {

@@ -368,6 +368,24 @@ function TeamManager({ onLogout, onTeamComplete }) {
     }
   };
 
+  const handleDeleteGroup = async (groupId) => {
+    if (!window.confirm("이 그룹을 삭제하시겠습니까?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/groups/${groupId}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (json.isSuccess) {
+        await Promise.all([fetchGroups(), fetchMembers()]);
+      } else {
+        alert(json.message || "그룹 삭제에 실패했습니다.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("그룹 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   const handleChangeMemberGroup = async (id, groupId) => {
     try {
       const res = await fetch(`${API_BASE}/members/${id}/group`, {
@@ -436,6 +454,39 @@ function TeamManager({ onLogout, onTeamComplete }) {
                 그룹 추가
               </button>
             </form>
+            <div className="divider" />
+            <h3 className="section-title" style={{ marginBottom: "0.5rem" }}>그룹 목록</h3>
+            {groups.length === 0 ? (
+              <p className="muted">등록된 그룹이 없습니다.</p>
+            ) : (
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "0.5rem" }}>
+                {groups.map((g) => (
+                  <li
+                    key={g.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "0.65rem 0.75rem",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: 10,
+                      background: "#fff",
+                    }}
+                  >
+                    <span>{g.name}</span>
+                    <button
+                      className="button ghost"
+                      title="그룹 삭제"
+                      aria-label="그룹 삭제"
+                      style={{ padding: "0.45rem 0.6rem", borderRadius: 10 }}
+                      onClick={() => handleDeleteGroup(g.id)}
+                    >
+                      🗑️
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="card section" style={sectionCardStyle}>
@@ -527,10 +578,12 @@ function TeamManager({ onLogout, onTeamComplete }) {
                       <td>
                         <button
                           className="button ghost"
-                          style={{ padding: "0.55rem 0.85rem", borderRadius: 12 }}
+                          style={{ padding: "0.45rem 0.7rem", borderRadius: 12 }}
                           onClick={() => handleDeleteMember(m.id)}
+                          title="멤버 삭제"
+                          aria-label="멤버 삭제"
                         >
-                          삭제
+                          🗑️
                         </button>
                       </td>
                     </tr>

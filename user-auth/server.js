@@ -245,6 +245,26 @@ app.post("/groups", async (req, res) => {
   }
 });
 
+// 프로젝트 그룹 삭제
+app.delete("/groups/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 그룹을 참조 중인 멤버의 group_id를 해제
+    await db.query("UPDATE teamMember SET group_id = NULL WHERE group_id = ?", [id]);
+
+    const [result] = await db.query("DELETE FROM projectGroup WHERE id = ?", [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ isSuccess: false, message: "존재하지 않는 그룹입니다." });
+    }
+
+    return res.json({ isSuccess: true, message: "그룹이 삭제되었습니다." });
+  } catch (err) {
+    console.error("DELETE /groups/:id ERROR:", err);
+    return res.status(500).json({ isSuccess: false, message: "그룹 삭제 중 오류가 발생했습니다." });
+  }
+});
+
 // 특정 팀원의 그룹 변경
 app.put("/members/:id/group", async (req, res) => {
   try {
