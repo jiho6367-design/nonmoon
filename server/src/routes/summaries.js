@@ -4,9 +4,10 @@ import { getPaperById } from "../data/papersRepo.js";
 import {
   addSummary,
   getSummaryById,
+  listAllSummaries,
   listSummariesByPaper,
-  removeSummary,
-  updateSummary,
+  removeSummaryById,
+  updateSummaryById,
 } from "../data/summariesRepo.js";
 import { validateSummaryCreate, validateSummaryPatch } from "../utils/validation.js";
 import { generatePaperSummary } from "../services/summarizer.js";
@@ -19,12 +20,8 @@ const uploadRoot = process.env.UPLOAD_ROOT
   : path.resolve(process.cwd(), "uploads");
 
 router.get("/papers/:paperId/summaries", (req, res) => {
-  const { paperId } = req.params;
-  const paper = getPaperById(paperId);
-  if (!paper) {
-    return res.status(404).json({ error: "paper not found" });
-  }
-  return res.json(listSummariesByPaper(paperId));
+  // Everyone can see all summaries regardless of paperId/login/group.
+  return res.json(listAllSummaries());
 });
 
 router.post("/papers/:paperId/summaries", async (req, res, next) => {
@@ -65,13 +62,9 @@ router.post("/papers/:paperId/summaries", async (req, res, next) => {
 router.patch("/papers/:paperId/summaries/:summaryId", (req, res, next) => {
   try {
     const { paperId, summaryId } = req.params;
-    const paper = getPaperById(paperId);
-    if (!paper) {
-      return res.status(404).json({ error: "paper not found" });
-    }
-
+    // Allow updates regardless of paperId; keep param for backward compatibility.
     const patch = validateSummaryPatch(req.body);
-    const updated = updateSummary(paperId, summaryId, patch);
+    const updated = updateSummaryById(summaryId, patch);
     if (!updated) {
       return res.status(404).json({ error: "summary not found" });
     }
@@ -84,12 +77,8 @@ router.patch("/papers/:paperId/summaries/:summaryId", (req, res, next) => {
 
 router.delete("/papers/:paperId/summaries/:summaryId", (req, res) => {
   const { paperId, summaryId } = req.params;
-  const paper = getPaperById(paperId);
-  if (!paper) {
-    return res.status(404).json({ error: "paper not found" });
-  }
 
-  const removed = removeSummary(paperId, summaryId);
+  const removed = removeSummaryById(summaryId);
   if (!removed) {
     return res.status(404).json({ error: "summary not found" });
   }

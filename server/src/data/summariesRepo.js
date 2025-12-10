@@ -82,6 +82,12 @@ export function listSummariesByPaper(paperId) {
     .sort((a, b) => Date.parse(b.createdAt || 0) - Date.parse(a.createdAt || 0));
 }
 
+export function listAllSummaries() {
+  return summaries
+    .slice()
+    .sort((a, b) => Date.parse(b.createdAt || 0) - Date.parse(a.createdAt || 0));
+}
+
 export function addSummary(payload) {
   const summary = hydrateSummary(payload);
   summaries.unshift(summary);
@@ -106,8 +112,29 @@ export function updateSummary(paperId, id, patch = {}) {
   return next;
 }
 
+export function updateSummaryById(id, patch = {}) {
+  const idx = summaries.findIndex((s) => s.id === id);
+  if (idx === -1) return null;
+  const next = hydrateSummary({
+    ...summaries[idx],
+    ...patch,
+    updatedAt: new Date().toISOString(),
+  });
+  summaries[idx] = next;
+  persist(summaries);
+  return next;
+}
+
 export function removeSummary(paperId, id) {
   const idx = summaries.findIndex((s) => s.paperId === paperId && s.id === id);
+  if (idx === -1) return false;
+  summaries.splice(idx, 1);
+  persist(summaries);
+  return true;
+}
+
+export function removeSummaryById(id) {
+  const idx = summaries.findIndex((s) => s.id === id);
   if (idx === -1) return false;
   summaries.splice(idx, 1);
   persist(summaries);
