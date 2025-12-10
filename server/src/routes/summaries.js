@@ -21,7 +21,30 @@ const uploadRoot = process.env.UPLOAD_ROOT
 
 router.get("/papers/:paperId/summaries", (req, res) => {
   // Everyone can see all summaries regardless of paperId/login/group.
-  return res.json(listAllSummaries());
+  const papersById = new Map();
+  const toPaper = (paperId) => {
+    if (!papersById.has(paperId)) {
+      papersById.set(paperId, getPaperById(paperId));
+    }
+    return papersById.get(paperId);
+  };
+
+  const enriched = listAllSummaries().map((summary) => {
+    const paper = toPaper(summary.paperId);
+    const storedFileName = summary.storedFileName || paper?.storedFileName || "";
+    const pdfName = summary.pdfName || paper?.fileName || "";
+    const fileUrl = storedFileName ? `/uploads/${storedFileName}` : null;
+    return {
+      ...summary,
+      paperTitle: paper?.title || "",
+      paperAuthor: paper?.author || "",
+      pdfName,
+      storedFileName,
+      fileUrl,
+    };
+  });
+
+  return res.json(enriched);
 });
 
 router.post("/papers/:paperId/summaries", async (req, res, next) => {
@@ -48,6 +71,7 @@ router.post("/papers/:paperId/summaries", async (req, res, next) => {
       author: payload.author || paper.author || "",
       year: payload.year || paper.uploadedAt?.slice(0, 4) || "",
       pdfName: payload.pdfName || paper.fileName || "",
+      storedFileName: paper.storedFileName || "",
       uploader: payload.uploader || "",
       summary: summaryText,
     });

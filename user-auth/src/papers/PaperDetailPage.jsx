@@ -22,7 +22,9 @@ function PaperDetailPage({ paper, onBack, currentMemberName }) {
   const [summaryActionId, setSummaryActionId] = useState("");
   const [summaryCreating, setSummaryCreating] = useState(false);
   const [summaryError, setSummaryError] = useState("");
+  const [summaryFileOverride, setSummaryFileOverride] = useState(null);
   const fileSource =
+    summaryFileOverride ||
     paper.fileUrl ||
     paper.file ||
     (paper.storedFileName ? `http://localhost:4000/uploads/${paper.storedFileName}` : "");
@@ -141,6 +143,25 @@ function PaperDetailPage({ paper, onBack, currentMemberName }) {
   const handleSelectSummary = (entryId) => {
     setSelectedSummaryId(entryId);
   };
+
+  useEffect(() => {
+    if (!selectedSummary) {
+      setSummaryFileOverride(null);
+      return;
+    }
+    const url =
+      selectedSummary.fileUrl ||
+      (selectedSummary.storedFileName
+        ? `http://localhost:4000/uploads/${selectedSummary.storedFileName}`
+        : null);
+    setSummaryFileOverride(url);
+  }, [selectedSummary]);
+
+  useEffect(() => {
+    if (activePanel !== "summary") {
+      setSummaryFileOverride(null);
+    }
+  }, [activePanel]);
   const isSidebarOpen = Boolean(activePanel);
 
   return (
