@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /api/papers/35f995b2-ba4d-45f1-b29e-44b32a4e8250/summaries</pre>
+</body>
+</html>

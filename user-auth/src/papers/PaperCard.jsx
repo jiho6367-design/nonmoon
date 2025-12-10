@@ -42,8 +42,7 @@ function PaperCard({ paper, onClick, onDelete, onEdit }) {
 
       <div className="paper-card-uploader">
         <span className="paper-card-uploader-text">
-          <span>업로드</span>
-          <span>{paper.uploader ? `업로드 : ${paper.uploader}` : "업로더 미지정"}</span>
+          <span>{paper.uploader ? `업로드 ⬆️${paper.uploader}⬆️` : "업로더 미지정"}</span>
         </span>
       </div>
     </div>

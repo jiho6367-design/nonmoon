@@ -173,3 +173,46 @@ export function validatePaperPatch(body = {}) {
 
   return patch;
 }
+
+export function validateSummaryCreate(body = {}) {
+  return {
+    title: ensureString(body.title ?? "", "title", { required: false, maxLength: 300 }),
+    author: ensureString(body.author ?? "", "author", { required: false, maxLength: 200 }),
+    year: ensureString(body.year ?? "", "year", { required: false, maxLength: 20 }),
+    pdfName: ensureString(body.pdfName ?? "", "pdfName", { required: false, maxLength: 400 }),
+    summary: ensureString(body.summary ?? "", "summary", { required: false, maxLength: 8000 }),
+    uploader: ensureString(body.uploader ?? "", "uploader", { required: false, maxLength: 200 }),
+  };
+}
+
+export function validateSummaryPatch(body = {}) {
+  if (typeof body !== "object" || Array.isArray(body)) {
+    throw new ValidationError("payload must be an object");
+  }
+  const patch = {};
+
+  if ("title" in body) {
+    patch.title = ensureString(body.title ?? "", "title", { required: false, maxLength: 300 });
+  }
+  if ("author" in body) {
+    patch.author = ensureString(body.author ?? "", "author", { required: false, maxLength: 200 });
+  }
+  if ("year" in body) {
+    patch.year = ensureString(body.year ?? "", "year", { required: false, maxLength: 20 });
+  }
+  if ("pdfName" in body) {
+    patch.pdfName = ensureString(body.pdfName ?? "", "pdfName", { required: false, maxLength: 400 });
+  }
+  if ("summary" in body) {
+    patch.summary = ensureString(body.summary ?? "", "summary", { required: false, maxLength: 8000 });
+  }
+  if ("uploader" in body) {
+    patch.uploader = ensureString(body.uploader ?? "", "uploader", { required: false, maxLength: 200 });
+  }
+
+  if (!Object.keys(patch).length) {
+    throw new ValidationError("at least one field must be provided");
+  }
+
+  return patch;
+}

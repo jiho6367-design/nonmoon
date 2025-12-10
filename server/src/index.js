@@ -7,6 +7,7 @@ import aiRouter from "./routes/ai.js";
 import searchRouter from "./routes/search.js";
 import cardsRouter from "./routes/cards.js";
 import papersRouter from "./routes/papers.js";
+import summariesRouter from "./routes/summaries.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -23,6 +24,7 @@ app.use("/api/ai", aiRouter);
 app.use("/api", searchRouter);
 app.use("/api", cardsRouter);
 app.use("/api", papersRouter);
+app.use("/api", summariesRouter);
 
 app.use(errorHandler);
 

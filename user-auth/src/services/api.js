@@ -149,3 +149,53 @@ export async function deletePaper(id) {
     throw new Error(msg || "Failed to delete paper");
   }
 }
+
+// Summaries
+export async function fetchSummaries(paperId) {
+  const res = await fetch(`${API_BASE}/papers/${paperId}/summaries`);
+  if (!res.ok) {
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg || "Failed to load summaries");
+  }
+  return res.json();
+}
+
+export async function createSummary(paperId, payload) {
+  const res = await fetch(`${API_BASE}/papers/${paperId}/summaries`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg || "Failed to create summary");
+  }
+
+  return res.json();
+}
+
+export async function updateSummary(paperId, summaryId, patch) {
+  const res = await fetch(`${API_BASE}/papers/${paperId}/summaries/${summaryId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+
+  if (!res.ok) {
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg || "Failed to update summary");
+  }
+  return res.json();
+}
+
+export async function deleteSummary(paperId, summaryId) {
+  const res = await fetch(`${API_BASE}/papers/${paperId}/summaries/${summaryId}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok && res.status !== 204) {
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg || "Failed to delete summary");
+  }
+}
