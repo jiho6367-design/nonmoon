@@ -10,14 +10,21 @@ function SearchBar({ onSearchResult }) {
   const [onlyBookmarked, setOnlyBookmarked] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const hasFilterInput = () => {
+    const queryTrimmed = query.trim();
+    const authorTrimmed = authorFilter.trim();
+    const yearTrimmed = yearFilter.trim();
+    return Boolean(queryTrimmed || authorTrimmed || yearTrimmed || onlyBookmarked);
+  };
+
   const handleSearch = async (e) => {
     e?.preventDefault();
     const queryTrimmed = query.trim();
     const authorTrimmed = authorFilter.trim();
     const yearTrimmed = yearFilter.trim();
-    const hasFilterInput = queryTrimmed || authorTrimmed || yearTrimmed || onlyBookmarked;
+    const hasInput = queryTrimmed || authorTrimmed || yearTrimmed || onlyBookmarked;
 
-    if (!hasFilterInput) {
+    if (!hasInput) {
       alert("본문/주제 검색어 혹은 필터를 입력해 주세요.");
       return;
     }
@@ -184,7 +191,7 @@ function SearchBar({ onSearchResult }) {
 
       <button
         type="submit"
-        disabled={loading || !query.trim()}
+        disabled={loading || !hasFilterInput()}
         style={buttonStyle}
       >
         {loading ? "검색 중.." : "검색"}
