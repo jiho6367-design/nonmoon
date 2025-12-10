@@ -1,27 +1,51 @@
 [
   {
-    "id": "87322064-3d19-4629-8eb1-0ac3c5264dd5",
-    "title": "ㅇㅍㄴㅍㄴㅇㅍ",
-    "author": "ㅊㅇㄴㅊㄴㅇ",
+    "id": "4984d2b0-b0b6-4211-8432-10de986ae50a",
+    "title": "삭제할논문",
+    "author": "삭제할논문",
     "memoCount": 0,
-    "fileName": "제9장 조건부렌더링 (1).pdf",
-    "storedFileName": "papers/1765373142972--9-1-.pdf",
-    "fileSize": 1224182,
-    "uploader": "임성민",
-    "uploadedAt": "2025-12-10T13:25:43.021Z",
-    "updatedAt": "2025-12-10T13:25:43.021Z"
+    "fileName": "운영체제 과제 2021145002강지호.pdf",
+    "storedFileName": "papers/1765381414857--2021145002-.pdf",
+    "fileSize": 1954803,
+    "uploader": "강지호",
+    "uploadedAt": "2025-12-10T15:43:34.887Z",
+    "updatedAt": "2025-12-10T15:43:34.887Z"
   },
   {
-    "id": "b1113499-afc8-45c8-aedc-c62a234910a3",
-    "title": "안영",
-    "author": "하세요",
+    "id": "6e88ee0d-cfdf-42fc-af95-8ce6a2806b56",
+    "title": "환경친화적 마그네슘 합금 안경테",
+    "author": "민준기",
     "memoCount": 0,
-    "fileName": "장애인의 스마트폰 수용의도에 관한 연구.pdf",
-    "storedFileName": "papers/1765372087409--.pdf",
-    "fileSize": 10107098,
-    "uploader": "임성민",
-    "uploadedAt": "2025-12-10T13:08:07.526Z",
-    "updatedAt": "2025-12-10T13:08:07.526Z"
+    "fileName": "환경친화적 마그네슘 합금 안경테.pdf",
+    "storedFileName": "papers/1765380732359--.pdf",
+    "fileSize": 1177875,
+    "uploader": "강지호",
+    "uploadedAt": "2025-12-10T15:32:12.393Z",
+    "updatedAt": "2025-12-10T15:32:12.393Z"
+  },
+  {
+    "id": "a6611123-70fd-43b0-83e2-8f3f4b25d1ab",
+    "title": "수치해석을 이용한 타 형상에 따른 수중 운동체의 조종 성능 연구",
+    "author": "이승환",
+    "memoCount": 0,
+    "fileName": "수치해석을 이용한 타 형상에 따른 수중 운동체의 조종 성능 연구.pdf",
+    "storedFileName": "papers/1765375319874--.pdf",
+    "fileSize": 2612665,
+    "uploader": "박예슬",
+    "uploadedAt": "2025-12-10T14:01:59.899Z",
+    "updatedAt": "2025-12-10T14:01:59.899Z"
+  },
+  {
+    "id": "7485f29c-3d89-445d-9e3a-d309205ad6b9",
+    "title": "위상 데이터 분석 기반 선박 블록의 대용량 3차원 포인트 클라우드 경략화 및 품질 분석",
+    "author": "김준수",
+    "memoCount": 0,
+    "fileName": "위상 데이터 분석 기반 선박 블록의 대용량 3차원 포인트 클라우드 경량화 및 품질 분석.p.pdf",
+    "storedFileName": "papers/1765374191223--3-p.pdf",
+    "fileSize": 3596139,
+    "uploader": "김경은",
+    "uploadedAt": "2025-12-10T13:43:11.274Z",
+    "updatedAt": "2025-12-10T13:43:11.274Z"
   },
   {
     "id": "af5c37d7-ce98-491c-b88d-7724da78f42b",
@@ -34,17 +58,5 @@
     "uploader": "임성민",
     "uploadedAt": "2025-12-10T12:53:46.372Z",
     "updatedAt": "2025-12-10T12:53:46.372Z"
-  },
-  {
-    "id": "bdf8799d-a9c5-4825-bee4-11764ef347e4",
-    "title": "스마트폰 앱을 활용한 영상 피드백 제공이 풋살  참여 중학생의 내적동기와 패스 정확도에 미치는  영향",
-    "author": "권혁수",
-    "memoCount": 0,
-    "fileName": "영상 피드백 효과.pdf",
-    "storedFileName": "papers/1765371106603--.pdf",
-    "fileSize": 2410217,
-    "uploader": "임성민",
-    "uploadedAt": "2025-12-10T12:51:46.686Z",
-    "updatedAt": "2025-12-10T12:53:07.408Z"
   }
 ]
