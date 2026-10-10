@@ -72,7 +72,7 @@ npm run test:e2e
 npm run format:check
 ```
 
-브라우저 설치를 마친 뒤에는 `npm run verify`로 기능 테스트·빌드·브라우저 테스트를 순서대로 실행할 수 있습니다. **HTTP·백업 22개와 브라우저 시나리오 7개 통과**를 확인했습니다. 설치 환경과 수정 라운드, 테스트 범위는 [검증 기록](docs/VERIFICATION.md)에 있습니다.
+브라우저 설치를 마친 뒤에는 `npm run verify`로 기능 테스트·빌드·브라우저 테스트를 순서대로 실행할 수 있습니다. **HTTP·백업 22개와 브라우저 시나리오 10개 통과**를 확인했습니다. 설치 환경과 수정 라운드, 테스트 범위는 [검증 기록](docs/VERIFICATION.md)에 있습니다.
 
 자료는 기본 `.data/`의 `nonmoon.sqlite`와 `uploads/`에 저장됩니다. 앱을 종료한 뒤 `npm run backup`을 실행하면 `backups/`에 데이터베이스와 PDF를 함께 백업합니다. 복원 시 앱을 종료하고 백업의 두 항목을 `DATA_DIR`에 함께 복사합니다. 기존 자료는 복원 전에 별도 보관하세요. 계정·세션·개인 자료가 포함된 `.data/`, `.env`, `backups/`는 Git에서 제외합니다.
 

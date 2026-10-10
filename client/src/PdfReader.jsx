@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
-import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import {
+  getDocument,
+  GlobalWorkerOptions,
+} from "pdfjs-dist/legacy/build/pdf.mjs";
+import workerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
 import "./pdf-reader.css";
 
 GlobalWorkerOptions.workerSrc = workerUrl;
@@ -15,6 +18,7 @@ export default function PdfReader({ fileUrl, page, onPageChange, title }) {
   const [pageText, setPageText] = useState("");
   const [textError, setTextError] = useState("");
   const [pageInput, setPageInput] = useState(String(page));
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     const element = hostRef.current;
@@ -31,25 +35,77 @@ export default function PdfReader({ fileUrl, page, onPageChange, title }) {
     setError("");
     setPageText("");
     setLoading(true);
-    const task = getDocument({ url: fileUrl, withCredentials: true });
-    task.promise
+    setRendering(false);
+    hostRef.current.replaceChildren();
+    const controller = new AbortController();
+    let task;
+    let timedOut = false;
+    let rejectTimeout;
+    const deadline = new Promise((_, reject) => {
+      rejectTimeout = reject;
+    });
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+      rejectTimeout(new Error("PDF_TIMEOUT"));
+    }, 30000);
+    const load = async () => {
+      const response = await fetch(fileUrl, {
+        credentials: "same-origin",
+        cache: "no-store",
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        const message =
+          response.status === 401
+            ? "로그인이 만료되었습니다. 다시 로그인한 뒤 원문을 열어 주세요."
+            : response.status === 403
+              ? "이 논문의 원문을 볼 권한이 없습니다. 팀 소속을 확인해 주세요."
+              : response.status === 404
+                ? "원본 PDF 파일을 찾을 수 없습니다. 업로드한 파일이 보관되어 있는지 확인해 주세요."
+                : `PDF 파일 요청에 실패했습니다. (HTTP ${response.status})`;
+        throw Object.assign(new Error(message), { userMessage: message });
+      }
+      const data = new Uint8Array(await response.arrayBuffer());
+      if (cancelled) return null;
+      if (String.fromCharCode(...data.subarray(0, 5)) !== "%PDF-") {
+        const message =
+          "서버에서 PDF 대신 다른 응답을 받았습니다. 로그인과 실행 주소를 확인해 주세요.";
+        throw Object.assign(new Error(message), { userMessage: message });
+      }
+      task = getDocument({ data });
+      return task.promise;
+    };
+    Promise.race([load(), deadline])
       .then((document) => {
-        if (!cancelled) setPdf(document);
+        if (!cancelled && document) setPdf(document);
       })
-      .catch(() => {
-        if (!cancelled)
+      .catch((failure) => {
+        if (!cancelled) {
           setError(
-            "PDF를 불러오지 못했습니다. 새 창에서 열거나 다운로드해 주세요.",
+            timedOut
+              ? "PDF를 불러오는 시간이 초과됐습니다. 서버 연결을 확인한 뒤 다시 불러와 주세요."
+              : failure.userMessage ||
+                  (failure.name === "InvalidPDFException"
+                    ? "PDF가 손상되었거나 지원하지 않는 형식입니다. 원본 파일을 확인해 주세요."
+                    : failure.name === "PasswordException"
+                      ? "암호로 보호된 PDF입니다. 암호를 해제한 파일을 업로드해 주세요."
+                      : "PDF 읽기 모듈 또는 연결에 문제가 생겼습니다. 다시 불러오기를 누르거나 새 창에서 원문을 확인해 주세요."),
           );
+          task?.destroy().catch(() => {});
+        }
       })
       .finally(() => {
+        clearTimeout(timeout);
         if (!cancelled) setLoading(false);
       });
     return () => {
       cancelled = true;
-      task.destroy().catch(() => {});
+      clearTimeout(timeout);
+      controller.abort();
+      task?.destroy().catch(() => {});
     };
-  }, [fileUrl]);
+  }, [fileUrl, reload]);
 
   useEffect(() => {
     if (pdf && (page < 1 || page > pdf.numPages))
@@ -177,9 +233,16 @@ export default function PdfReader({ fileUrl, page, onPageChange, title }) {
         </p>
       )}
       {error && (
-        <p className="pdf-reader-error" role="alert">
-          {error}
-        </p>
+        <div className="pdf-reader-error">
+          <p role="alert">{error}</p>
+          <button
+            className="secondary"
+            type="button"
+            onClick={() => setReload((value) => value + 1)}
+          >
+            PDF 다시 불러오기
+          </button>
+        </div>
       )}
       <div
         className="pdf-canvas-host"

@@ -402,3 +402,90 @@ test("login and archive meet automated accessibility checks", async ({
     })),
   ).toEqual([]);
 });
+
+test("PDF reader supports browsers without newer URL and Promise helpers", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    URL.parse = undefined;
+    Promise.withResolvers = undefined;
+  });
+  await page.reload();
+  await demo(page);
+  await page
+    .getByRole("button", {
+      name: "함께 읽는 연구: 협업 독서의 설계",
+      exact: true,
+    })
+    .click();
+  await expect(page.getByLabel("다음 PDF 페이지")).toBeDisabled();
+  await expect(page.locator(".pdf-canvas-host canvas")).toBeVisible();
+  await expect(page.locator(".pdf-canvas-host")).toHaveAttribute(
+    "aria-busy",
+    "false",
+  );
+  await page
+    .getByText("현재 페이지 텍스트 · 인용문 복사", { exact: true })
+    .click();
+  await expect(page.locator(".pdf-page-text pre")).toContainText(
+    "Collaborative Reading",
+  );
+});
+
+test("PDF request failure shows its cause and retry draws the original", async ({
+  page,
+}) => {
+  await demo(page);
+  await page.route("**/api/papers/*/file", (route) =>
+    route.fulfill({
+      status: 404,
+      contentType: "application/json",
+      body: JSON.stringify({
+        error: { code: "FILE_MISSING", message: "missing" },
+      }),
+    }),
+  );
+  await page
+    .getByRole("button", {
+      name: "함께 읽는 연구: 협업 독서의 설계",
+      exact: true,
+    })
+    .click();
+  await expect(page.getByRole("alert")).toContainText(
+    "원본 PDF 파일을 찾을 수 없습니다",
+  );
+  await expect(page.locator(".pdf-canvas-host canvas")).toHaveCount(0);
+  await page.unroute("**/api/papers/*/file");
+  await page.getByRole("button", { name: "PDF 다시 불러오기" }).click();
+  await expect(page.locator(".pdf-canvas-host canvas")).toBeVisible();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
+test("PDF reader distinguishes an expired session and a non-PDF response", async ({
+  page,
+}) => {
+  await demo(page);
+  await page.route("**/api/papers/*/file", (route) =>
+    route.fulfill({ status: 401, contentType: "application/json", body: "{}" }),
+  );
+  await page
+    .getByRole("button", {
+      name: "함께 읽는 연구: 협업 독서의 설계",
+      exact: true,
+    })
+    .click();
+  await expect(page.getByRole("alert")).toContainText(
+    "로그인이 만료되었습니다",
+  );
+  await page.unroute("**/api/papers/*/file");
+  await page.route("**/api/papers/*/file", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "text/html",
+      body: "<html>Wrong route</html>",
+    }),
+  );
+  await page.getByRole("button", { name: "PDF 다시 불러오기" }).click();
+  await expect(page.getByRole("alert")).toContainText("PDF 대신 다른 응답");
+  await expect(page.locator(".pdf-canvas-host canvas")).toHaveCount(0);
+});
