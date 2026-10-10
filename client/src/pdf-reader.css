@@ -1,0 +1,127 @@
+.pdf-reader {
+  border: 1px solid #d5ddd3;
+  background: #e8ece5;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+}
+.pdf-reader-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  background: #f7f9f4;
+  border-bottom: 1px solid #d5ddd3;
+}
+.pdf-reader-controls form {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #40523e;
+}
+.pdf-reader-controls button {
+  border: 1px solid #ccd7c8;
+  border-radius: 5px;
+  background: #fff;
+  padding: 6px 9px;
+  font-size: 11px;
+  color: #334e32;
+  white-space: nowrap;
+}
+.pdf-reader-controls button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.pdf-reader-controls input {
+  width: 48px;
+  border: 1px solid #ccd7c8;
+  border-radius: 5px;
+  background: #fff;
+  padding: 5px;
+  text-align: center;
+  font-size: 12px;
+  color: #334e32;
+}
+.pdf-reader-controls input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+.pdf-canvas-host {
+  width: 100%;
+  min-height: 180px;
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+.pdf-canvas-host canvas {
+  display: block;
+  max-width: 100%;
+  box-shadow: 0 2px 8px #273b221a;
+  background: white;
+}
+.pdf-reader-status {
+  padding: 8px 12px;
+  margin: 0;
+  background: #f1f5eb;
+  color: #4b6342;
+  font-size: 12px;
+}
+.pdf-reader-error {
+  padding: 12px;
+  margin: 0;
+  background: #fff1ed;
+  color: #8d382e;
+  font-size: 12px;
+}
+.pdf-page-text {
+  background: #fafcf7;
+  border-top: 1px solid #d5ddd3;
+  padding: 13px;
+  color: #3e583b;
+}
+.pdf-page-text summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+.pdf-page-text > p {
+  font-size: 11px;
+  margin: 12px 0;
+  color: #596d51;
+}
+.pdf-page-text pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font:
+    12px/1.8 "DM Sans Variable",
+    "Noto Sans KR Variable",
+    sans-serif;
+  max-height: 280px;
+  overflow: auto;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e0e6da;
+  border-radius: 5px;
+  user-select: text;
+}
+.pdf-page-text summary:focus-visible {
+  outline: 3px solid #90b2a1;
+  outline-offset: 3px;
+}
+@media (max-width: 420px) {
+  .pdf-reader-controls {
+    padding: 9px 7px;
+    gap: 4px;
+  }
+  .pdf-reader-controls button {
+    padding: 6px;
+    font-size: 10px;
+  }
+  .pdf-reader-controls form {
+    gap: 4px;
+  }
+  .pdf-reader-controls input {
+    width: 38px;
+  }
+}
