@@ -29,6 +29,10 @@
 
 **Node.js 24.x**를 설치하고 저장소 루트에서 실행합니다. 새 앱에는 MySQL이나 AI API 키가 필요하지 않습니다.
 
+**Windows ZIP 사용자:** 압축을 모두 푼 뒤 최상위 `START_Windows.bat`를 더블클릭합니다. 이 파일은 자신의 폴더로 자동 이동한 다음 설치·빌드·서버 시작을 차례로 실행합니다. 서버 시작 문구가 나오면 브라우저에서 `http://localhost:4000`을 엽니다. 실행 창은 닫지 마세요.
+
+명령을 직접 입력할 때는 `api`, `client`, `START_Windows.bat`, 루트 `package.json`이 함께 보이는 폴더를 사용합니다. `server/`와 `user-auth/`에도 예전 `package.json`이 있지만 보관용 원본이므로 그 안에서 실행하면 안 됩니다. 이미 `server>`에서 명령을 실행했다면 먼저 `cd ..`로 한 단계 위로 이동하세요.
+
 ```bash
 git clone --branch jiho/individual-improvement https://github.com/jiho6367-design/nonmoon.git
 cd nonmoon
