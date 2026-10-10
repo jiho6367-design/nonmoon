@@ -68,6 +68,7 @@ function normalizeBoolean(value, field) {
 export function validateNormalizeQuotePayload(body = {}) {
   return {
     text: ensureString(body.text, "text"),
+    creatorName: normalizeOptionalString(body.creatorName, { maxLength: 200 }),
   };
 }
 
@@ -92,6 +93,7 @@ export function validateCardPatch(patch = {}) {
   if ("sourceTitle" in patch) sanitized.sourceTitle = normalizeOptionalString(patch.sourceTitle, { maxLength: 500 });
   if ("venue" in patch) sanitized.venue = normalizeOptionalString(patch.venue, { maxLength: 500 });
   if ("citationStyle" in patch) sanitized.citationStyle = ensureString(patch.citationStyle ?? "", "citationStyle", { required: false, maxLength: 500 });
+  if ("creatorName" in patch) sanitized.creatorName = normalizeOptionalString(patch.creatorName, { maxLength: 200 });
   if ("isBookmarked" in patch) sanitized.isBookmarked = normalizeBoolean(patch.isBookmarked, "isBookmarked");
 
   if (!Object.keys(sanitized).length) {
@@ -130,4 +132,87 @@ export function validateSearchPayload(body = {}) {
       : 0.65,
     onlyBookmarked: Boolean(onlyBookmarked),
   };
+}
+
+export function validatePaperCreate(body = {}) {
+  return {
+    title: ensureString(body.title, "title", { maxLength: 300 }),
+    author: ensureString(body.author ?? "", "author", {
+      required: false,
+      maxLength: 200,
+    }),
+    uploader: ensureString(body.uploader ?? "", "uploader", {
+      required: false,
+      maxLength: 200,
+    }),
+  };
+}
+
+export function validatePaperPatch(body = {}) {
+  if (typeof body !== "object" || Array.isArray(body)) {
+    throw new ValidationError("payload must be an object");
+  }
+  const patch = {};
+
+  if ("title" in body) {
+    patch.title = ensureString(body.title ?? "", "title", {
+      required: false,
+      maxLength: 300,
+    });
+  }
+  if ("author" in body) {
+    patch.author = ensureString(body.author ?? "", "author", {
+      required: false,
+      maxLength: 200,
+    });
+  }
+
+  if (!Object.keys(patch).length) {
+    throw new ValidationError("at least one field must be provided");
+  }
+
+  return patch;
+}
+
+export function validateSummaryCreate(body = {}) {
+  return {
+    title: ensureString(body.title ?? "", "title", { required: false, maxLength: 300 }),
+    author: ensureString(body.author ?? "", "author", { required: false, maxLength: 200 }),
+    year: ensureString(body.year ?? "", "year", { required: false, maxLength: 20 }),
+    pdfName: ensureString(body.pdfName ?? "", "pdfName", { required: false, maxLength: 400 }),
+    summary: ensureString(body.summary ?? "", "summary", { required: false, maxLength: 8000 }),
+    uploader: ensureString(body.uploader ?? "", "uploader", { required: false, maxLength: 200 }),
+  };
+}
+
+export function validateSummaryPatch(body = {}) {
+  if (typeof body !== "object" || Array.isArray(body)) {
+    throw new ValidationError("payload must be an object");
+  }
+  const patch = {};
+
+  if ("title" in body) {
+    patch.title = ensureString(body.title ?? "", "title", { required: false, maxLength: 300 });
+  }
+  if ("author" in body) {
+    patch.author = ensureString(body.author ?? "", "author", { required: false, maxLength: 200 });
+  }
+  if ("year" in body) {
+    patch.year = ensureString(body.year ?? "", "year", { required: false, maxLength: 20 });
+  }
+  if ("pdfName" in body) {
+    patch.pdfName = ensureString(body.pdfName ?? "", "pdfName", { required: false, maxLength: 400 });
+  }
+  if ("summary" in body) {
+    patch.summary = ensureString(body.summary ?? "", "summary", { required: false, maxLength: 8000 });
+  }
+  if ("uploader" in body) {
+    patch.uploader = ensureString(body.uploader ?? "", "uploader", { required: false, maxLength: 200 });
+  }
+
+  if (!Object.keys(patch).length) {
+    throw new ValidationError("at least one field must be provided");
+  }
+
+  return patch;
 }

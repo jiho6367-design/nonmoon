@@ -1,0 +1,112 @@
+import { Router } from "express";
+import path from "node:path";
+import { getPaperById } from "../data/papersRepo.js";
+import {
+  addSummary,
+  getSummaryById,
+  listAllSummaries,
+  listSummariesByPaper,
+  removeSummaryById,
+  updateSummaryById,
+} from "../data/summariesRepo.js";
+import { validateSummaryCreate, validateSummaryPatch } from "../utils/validation.js";
+import { generatePaperSummary } from "../services/summarizer.js";
+import { logError } from "../utils/logger.js";
+
+const router = Router();
+
+const uploadRoot = process.env.UPLOAD_ROOT
+  ? path.resolve(process.cwd(), process.env.UPLOAD_ROOT)
+  : path.resolve(process.cwd(), "uploads");
+
+router.get("/papers/:paperId/summaries", (req, res) => {
+  // Everyone can see all summaries regardless of paperId/login/group.
+  const papersById = new Map();
+  const toPaper = (paperId) => {
+    if (!papersById.has(paperId)) {
+      papersById.set(paperId, getPaperById(paperId));
+    }
+    return papersById.get(paperId);
+  };
+
+  const enriched = listAllSummaries().map((summary) => {
+    const paper = toPaper(summary.paperId);
+    const storedFileName = summary.storedFileName || paper?.storedFileName || "";
+    const pdfName = summary.pdfName || paper?.fileName || "";
+    const fileUrl = storedFileName ? `/uploads/${storedFileName}` : null;
+    return {
+      ...summary,
+      paperTitle: paper?.title || "",
+      paperAuthor: paper?.author || "",
+      pdfName,
+      storedFileName,
+      fileUrl,
+    };
+  });
+
+  return res.json(enriched);
+});
+
+router.post("/papers/:paperId/summaries", async (req, res, next) => {
+  try {
+    const { paperId } = req.params;
+    const paper = getPaperById(paperId);
+    if (!paper) {
+      return res.status(404).json({ error: "paper not found" });
+    }
+
+    const payload = validateSummaryCreate(req.body);
+    const summaryText =
+      payload.summary?.trim() ||
+      (await generatePaperSummary({
+        paper,
+        uploadRoot,
+        pdfName: payload.pdfName || paper.fileName,
+        year: payload.year,
+      }));
+
+    const summary = addSummary({
+      paperId,
+      title: payload.title || paper.title || "제목 없는 논문",
+      author: payload.author || paper.author || "",
+      year: payload.year || paper.uploadedAt?.slice(0, 4) || "",
+      pdfName: payload.pdfName || paper.fileName || "",
+      storedFileName: paper.storedFileName || "",
+      uploader: payload.uploader || "",
+      summary: summaryText,
+    });
+
+    return res.status(201).json(summary);
+  } catch (err) {
+    logError("Failed to create summary", err);
+    return next(err);
+  }
+});
+
+router.patch("/papers/:paperId/summaries/:summaryId", (req, res, next) => {
+  try {
+    const { paperId, summaryId } = req.params;
+    // Allow updates regardless of paperId; keep param for backward compatibility.
+    const patch = validateSummaryPatch(req.body);
+    const updated = updateSummaryById(summaryId, patch);
+    if (!updated) {
+      return res.status(404).json({ error: "summary not found" });
+    }
+    return res.json(updated);
+  } catch (err) {
+    logError("Failed to update summary", err);
+    return next(err);
+  }
+});
+
+router.delete("/papers/:paperId/summaries/:summaryId", (req, res) => {
+  const { paperId, summaryId } = req.params;
+
+  const removed = removeSummaryById(summaryId);
+  if (!removed) {
+    return res.status(404).json({ error: "summary not found" });
+  }
+  return res.status(204).send();
+});
+
+export default router;

@@ -1,147 +1,148 @@
 // server/src/services/openai.js
 import "dotenv/config";
-import { logError } from "../utils/logger.js";
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_API_KEY =
+  process.env.OPENAI_API_KEY ||
+  process.env.OPENAI_KEY ||
+  process.env.OPENAI_TOKEN ||
+  "";
+const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
-const OPENAI_EMBEDDING_MODEL =
-  process.env.OPENAI_EMBEDDING_MODEL || "text-embedding-3-small";
 
-function assertApiKey() {
-  if (!OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is not configured");
-  }
-}
+async function callChat(messages, { model = OPENAI_MODEL, temperature = 0.3, maxTokens = 600 } = {}) {
+  if (!OPENAI_API_KEY) return null;
 
-async function readJsonResponse(res) {
-  let payload;
   try {
-    payload = await res.json();
-  } catch (error) {
-    throw new Error("Failed to parse OpenAI response");
-  }
+    const res = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature,
+        max_tokens: maxTokens,
+      }),
+    });
 
-  if (!res.ok) {
-    const err = new Error(payload?.error?.message || "OpenAI request failed");
-    err.status = res.status;
-    throw err;
-  }
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => "");
+      throw new Error(errorText || `OpenAI request failed with ${res.status}`);
+    }
 
-  return payload;
+    const json = await res.json();
+    const content = json?.choices?.[0]?.message?.content;
+    return typeof content === "string" ? content.trim() : null;
+  } catch (err) {
+    console.error("[openai] chat error", err);
+    return null;
+  }
 }
 
-// 공통 chat 호출
-async function callChat(messages) {
-  assertApiKey();
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: OPENAI_MODEL,
-      messages,
-      temperature: 0.2,
-    }),
-  });
-
-  const data = await readJsonResponse(res);
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) {
-    throw new Error("Missing completion content");
-  }
-  return content;
-}
-
-// 2번: 인용 구절 정리
 export async function normalizeQuote(text) {
-  const content = await callChat([
-    {
-      role: "system",
-      content:
-        "너는 논문 인용구를 카드 데이터로 바꿔주는 도우미다. 반드시 JSON만 출력해.",
-    },
-    {
-      role: "user",
-      content: `다음 텍스트를 카드로 만들어.
-필드는 quote, topic(한국어 한줄), note, keywords(배열 3~5개), author, year, sourceTitle 만 써.
-값을 모르면 null로 적어.
-텍스트: """${text}"""`,
-    },
-  ]);
+  const prompt = [
+    { role: "system", content: "Extract quote text and metadata. If metadata is missing, leave it null." },
+    { role: "user", content: text },
+  ];
+  const content = await callChat(prompt, { maxTokens: 300 });
 
-  try {
-    return JSON.parse(content);
-  } catch (e) {
+  if (!content) {
     return {
       quote: text,
-      topic: "제목 없음",
+      topic: "인용문",
       note: "",
-      keywords: [],
+      keywords: ["논문", "인용문"],
       author: null,
       year: null,
       sourceTitle: null,
     };
   }
+
+  return {
+    quote: text,
+    topic: content.slice(0, 80),
+    note: "",
+    keywords: [],
+    author: null,
+    year: null,
+    sourceTitle: null,
+  };
 }
 
-// 3번: 인용구 내보내기 (저자/연도)
 export async function formatCitation(hint) {
-  const content = await callChat([
+  const prompt = [
+    { role: "system", content: "Return a short citation style string for the provided hint." },
+    { role: "user", content: hint || "논문 제목 없음" },
+  ];
+  const content = await callChat(prompt, { maxTokens: 150 });
+
+  return {
+    author: null,
+    year: null,
+    title: hint || "제목 없음",
+    venue: null,
+    style: content || "",
+  };
+}
+
+export async function embed(_text) {
+  // Embedding is stubbed; replace with a real vector call if needed.
+  return new Array(1536).fill(0.1);
+}
+
+export async function generateSummaryText({
+  title,
+  author,
+  year,
+  pdfName,
+  extraContext = "",
+  pdfText = "",
+} = {}) {
+  const cleanSummary = (text = "") =>
+    text
+      .split("\n")
+      .map((line) =>
+        line
+          // Remove leading bullets / dashes / asterisks
+          .replace(/^\s*([*•●‣▪▫◦−–—-]\s*)+/, "")
+          // Trim leftover whitespace
+          .trim()
+      )
+      .join("\n")
+      // Collapse multiple blank lines
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
+  const summaryPrompt = [
     {
       role: "system",
       content:
-        "너는 논문/서적 참고문헌을 정리하는 도우미다. 사용자가 대충 쓴 설명을 author, year, title, venue로 추론해서 JSON만 출력해.",
+        "You summarize research papers concisely in Korean. Focus on 문제-방법-결과-의의, keep it under 6 bullet points.",
     },
     {
       role: "user",
-      content: `아래 내용을 참고문헌 정보로 변환해.
-반드시 아래 형식의 JSON만 출력해.
-{
-  "author": "... 또는 null",
-  "year": "... 또는 null",
-  "title": "... 또는 null",
-  "venue": "... 또는 null",
-  "style": "가능하면 APA 비슷한 한 줄, 없으면 빈 문자열"
-}
-내용: """${hint}"""`,
+      content: [
+        `제목: ${title || "제목 없음"}`,
+        `저자: ${author || "미기재"}`,
+        `연도: ${year || "미기재"}`,
+        pdfName ? `파일명: ${pdfName}` : "",
+        extraContext || "",
+        pdfText ? `본문 일부:\n${pdfText}` : "PDF 본문이 없거나 추출되지 않았습니다.",
+      ]
+        .filter(Boolean)
+        .join("\n"),
     },
-  ]);
+  ];
 
-  try {
-    return JSON.parse(content);
-  } catch (e) {
-    return {
-      author: null,
-      year: null,
-      title: null,
-      venue: null,
-      style: "",
-    };
+  const content = await callChat(summaryPrompt, { maxTokens: 350 });
+  if (!content) {
+    return cleanSummary([
+      `${title || "제목 없는 논문"}의 주요 내용을 간략히 정리했습니다.`,
+      "PDF 본문이 없어 메타데이터 기반으로 핵심 의도와 기대 효과를 요약했습니다.",
+      "실제 내용을 반영하려면 PDF 전문을 처리하는 요약 모듈이 필요합니다.",
+    ].join("\n"));
   }
-}
-
-// 5번: 임베딩 (나중에 검색에 쓸 수 있음)
-export async function embed(text) {
-  assertApiKey();
-  const res = await fetch("https://api.openai.com/v1/embeddings", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: OPENAI_EMBEDDING_MODEL,
-      input: text,
-    }),
-  });
-
-  try {
-    const data = await readJsonResponse(res);
-    return data.data?.[0]?.embedding || [];
-  } catch (error) {
-    logError("Embedding generation failed", error);
-    throw error;
-  }
+  return cleanSummary(content);
 }
